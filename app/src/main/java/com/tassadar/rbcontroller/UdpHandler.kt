@@ -6,33 +6,40 @@ import java.io.IOException
 import java.net.*
 import java.util.concurrent.LinkedBlockingQueue
 
-class UdpHandler {
+class UdpHandler(listener: OnUdpPacketListener) {
     companion object {
         const val LOG = "RBController:UdpHandler"
         const val BROADCAST_PORT = 42424
+
+        const val CMD_DISCOVER = "discover"
+
+        const val CMD_FOUND = "found"
     }
 
-    val mSocket: DatagramSocket = DatagramSocket(null)
+    interface OnUdpPacketListener {
+        fun onUdpPacket(addr :InetSocketAddress, cmd :String, data :JSONObject)
+    }
+
+    var mSocket: DatagramSocket? = null
     var mWriter: WriterThread? = null
     var mReader: ReaderThread? = null
     var mStarted = false
-
-    constructor() {
-        mSocket.reuseAddress = true
-        mSocket.broadcast = true
-    }
+    val mListener = listener
 
     @Synchronized
     fun start() {
         if(!mStarted) {
-            mSocket.bind(null)
+            mSocket = DatagramSocket(null)
+            mSocket!!.broadcast = true
+            mSocket!!.reuseAddress = true
+            mSocket!!.bind(null)
 
-            Log.i(LOG, "Bound to ${mSocket.localSocketAddress}")
+            Log.i(LOG, "Bound to ${mSocket!!.localSocketAddress}")
 
-            mWriter = WriterThread(mSocket)
+            mWriter = WriterThread(mSocket!!)
             mWriter?.start()
 
-            mReader = ReaderThread(mSocket)
+            mReader = ReaderThread(mSocket!!, mListener)
             mReader?.start()
 
             mStarted = true
@@ -44,14 +51,22 @@ class UdpHandler {
         if(mStarted) {
             mWriter?.interrupt()
             mWriter?.join()
+            mWriter = null
 
             mReader?.interrupt()
             mReader?.join()
+            mReader = null
 
-            mSocket.close()
+            mSocket!!.close()
+            mSocket = null
 
             mStarted = false
         }
+    }
+
+    @Synchronized
+    private fun queuePacket(pkt :DatagramPacket) {
+        mWriter?.queuePacket(pkt)
     }
 
     fun send(address: SocketAddress, command: String, params :JSONObject? = null) {
@@ -62,7 +77,7 @@ class UdpHandler {
             params.toString().toByteArray()
         }
 
-        mWriter?.queuePacket(DatagramPacket(data, data.size, address))
+        queuePacket(DatagramPacket(data, data.size, address))
     }
 
     fun broadcast(command: String, params :JSONObject? = null) {
@@ -91,17 +106,29 @@ class UdpHandler {
         }
     }
 
-    class ReaderThread(socket: DatagramSocket) : Thread() {
-        private val mSocket :DatagramSocket = socket
+    class ReaderThread(socket: DatagramSocket, listener :OnUdpPacketListener) : Thread() {
+        private val mSocket = socket
+        private val mListener = listener
 
         override fun run() {
             val buf = ByteArray(65535)
             val pkt = DatagramPacket(buf, buf.size)
             while(!this.isInterrupted) {
-                mSocket.soTimeout = 500
+                mSocket.soTimeout = 250
                 try {
                     mSocket.receive(pkt)
+
+                    val str = String(pkt.data, pkt.offset, pkt.length)
                     Log.i(UdpHandler.LOG, "Got packet from ${pkt.socketAddress}: ${String(pkt.data, pkt.offset, pkt.length)}")
+
+                    try {
+                        val data = JSONObject(str)
+                        val cmd = data.getString("c")
+                        data.remove("c")
+                        mListener.onUdpPacket(InetSocketAddress(pkt.address, pkt.port), cmd, data)
+                    } catch(ex :Exception) {
+                        Log.e(LOG, "Exception while handling data from ${pkt.socketAddress}!", ex)
+                    }
                 } catch(ex :SocketTimeoutException) {
                     // pass, check for interrupt
                 }

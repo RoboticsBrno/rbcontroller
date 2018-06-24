@@ -5,17 +5,18 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import org.json.JSONObject
 import java.net.*
 
 
-class ControllerActivity : AppCompatActivity() {
+class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener {
     var mServer: WebSocketServer? = null
-    val mUdpHandler = UdpHandler()
+    val mUdpHandler = UdpHandler(this)
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_discover)
+        setContentView(R.layout.activity_controller)
 
         mServer = WebSocketServer(InetSocketAddress("127.0.0.1", 9000))
         mServer?.isReuseAddr = true
@@ -26,11 +27,9 @@ class ControllerActivity : AppCompatActivity() {
         settings.javaScriptEnabled = true
         webview.webViewClient = WebViewClient()
 
-        webview.loadUrl("http://192.168.100.100/test/index.html")
+        val dev = intent.getParcelableExtra<Device>("device")
 
-        mUdpHandler.start()
-
-        mUdpHandler.broadcast("discover")
+        webview.loadUrl("http://${dev.address.hostString}:${dev.port}${dev.path}")
     }
 
     override fun onDestroy() {
@@ -38,5 +37,8 @@ class ControllerActivity : AppCompatActivity() {
 
         mServer?.stop()
         mUdpHandler.stop()
+    }
+    override fun onUdpPacket(addr: InetSocketAddress, cmd: String, data: JSONObject) {
+
     }
 }

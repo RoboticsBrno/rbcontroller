@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">RBController</string>
+    <string name="scanning">Scanning...</string>
+    <string name="no_devices">No devices found.</string>
 </resources>
