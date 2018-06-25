@@ -20,11 +20,11 @@ class UdpHandler(listener: OnUdpPacketListener) {
         fun onUdpPacket(addr :InetSocketAddress, cmd :String, data :JSONObject)
     }
 
-    var mSocket: DatagramSocket? = null
-    var mWriter: WriterThread? = null
-    var mReader: ReaderThread? = null
-    var mStarted = false
-    val mListener = listener
+    private var mSocket: DatagramSocket? = null
+    private var mWriter: WriterThread? = null
+    private var mReader: ReaderThread? = null
+    private var mStarted = false
+    private val mListener = listener
 
     @Synchronized
     fun start() {
@@ -119,12 +119,11 @@ class UdpHandler(listener: OnUdpPacketListener) {
                     mSocket.receive(pkt)
 
                     val str = String(pkt.data, pkt.offset, pkt.length)
-                    Log.i(UdpHandler.LOG, "Got packet from ${pkt.socketAddress}: ${String(pkt.data, pkt.offset, pkt.length)}")
+                    Log.d(UdpHandler.LOG, "Got packet from ${pkt.socketAddress}: ${String(pkt.data, pkt.offset, pkt.length)}")
 
                     try {
                         val data = JSONObject(str)
                         val cmd = data.getString("c")
-                        data.remove("c")
                         mListener.onUdpPacket(InetSocketAddress(pkt.address, pkt.port), cmd, data)
                     } catch(ex :Exception) {
                         Log.e(LOG, "Exception while handling data from ${pkt.socketAddress}!", ex)

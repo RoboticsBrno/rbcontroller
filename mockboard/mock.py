@@ -51,5 +51,7 @@ if __name__ == "__main__":
         msg = json.loads(msg)
         if msg["c"] == "discover":
             sendmsg(sock, "found", addr, name="Mock", desc="MockingBoard script", path="/", port=WEB_PORT)
+        elif msg["c"] == "ping":
+            sendmsg(sock, "pong", addr)
 
 

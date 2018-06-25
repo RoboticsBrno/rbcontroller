@@ -3,22 +3,31 @@ package com.tassadar.rbcontroller
 import android.annotation.SuppressLint
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import org.json.JSONException
 import org.json.JSONObject
 import java.net.*
 
 
-class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener {
+class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, WebSocketServer.OnWebSocketMessageListener {
+    companion object {
+        const val LOG = "RB:ControllerAct"
+    }
+
     var mServer: WebSocketServer? = null
     val mUdpHandler = UdpHandler(this)
+    var mDevice :Device? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_controller)
 
-        mServer = WebSocketServer(InetSocketAddress("127.0.0.1", 9000))
+        mServer = WebSocketServer(InetSocketAddress("127.0.0.1", 9000), this)
         mServer?.isReuseAddr = true
         mServer?.start()
 
@@ -27,18 +36,54 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener {
         settings.javaScriptEnabled = true
         webview.webViewClient = WebViewClient()
 
-        val dev = intent.getParcelableExtra<Device>("device")
+        mDevice = intent.getParcelableExtra<Device>("device")
+        webview.loadUrl("http://${mDevice!!.address.hostString}:${mDevice!!.port}${mDevice!!.path}")
+    }
 
-        webview.loadUrl("http://${dev.address.hostString}:${dev.port}${dev.path}")
+    override fun onResume() {
+        super.onResume()
+
+        mUdpHandler.start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mUdpHandler.stop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-
+        findViewById<WebView>(R.id.webview).loadUrl("about:blank")
         mServer?.stop()
-        mUdpHandler.stop()
     }
-    override fun onUdpPacket(addr: InetSocketAddress, cmd: String, data: JSONObject) {
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.activity_discover, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.refresh -> {
+                findViewById<WebView>(R.id.webview).reload()
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onUdpPacket(addr: InetSocketAddress, cmd: String, data: JSONObject) {
+        mServer?.broadcast(data.toString())
+    }
+
+    override fun onWebSocketMessage(message: String) {
+        try {
+            val data = JSONObject(message)
+            val command = data.getString("c")
+            mUdpHandler.send(mDevice?.address as SocketAddress, command, data)
+        } catch(ex :JSONException) {
+            Log.e(LOG, "invalid json received from the web", ex)
+        }
     }
 }

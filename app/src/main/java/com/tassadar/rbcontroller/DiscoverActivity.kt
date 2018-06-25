@@ -12,14 +12,24 @@ import org.json.JSONObject
 import java.net.InetSocketAddress
 import java.util.*
 import kotlin.concurrent.timerTask
+import android.R.menu
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 
 
 class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, DiscoverAdapter.OnDeviceClickedListener {
     private val mUdpHandler = UdpHandler(this)
+    private var mScanning = false
+    private var mScanTimedOut = false
     private var mTimer :Timer? = null
+    private var mScanningTask :TimerTask? = null
     private val mDevices = ArrayList<Device>()
     private val mDiscoveredAddresses = HashSet<String>()
     private val mAdapter = DiscoverAdapter(mDevices, this)
+    private var mLastDeviceName = ""
+    private var mLastDeviceHost = ""
+    private var mActivityStartTime :Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +42,38 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
             layoutManager = manager
             adapter = mAdapter
         }
+
+        val pref = getSharedPreferences("", MODE_PRIVATE)
+        mLastDeviceName = pref.getString("lastDeviceName", "")
+        mLastDeviceHost = pref.getString("lastDeviceHost", "")
+        mActivityStartTime = System.currentTimeMillis()
+
+        mUdpHandler.start()
+        if(savedInstanceState == null) {
+            startScan()
+        } else if(savedInstanceState.containsKey("devices")) {
+            if(savedInstanceState.getBoolean("scanning", true))
+                startScan()
+            else
+                mScanTimedOut = true
+
+            val savedDevices = savedInstanceState.getSerializable("devices") as ArrayList<Device>
+            if(savedDevices.size != 0) {
+                val prevSize = mDevices.size
+                mDevices.addAll(savedDevices)
+                savedDevices.forEach {
+                    mDiscoveredAddresses.add(it.address.hostString)
+                }
+                mAdapter.notifyItemRangeInserted(prevSize, savedDevices.size)
+                setNoDevicesVisible(false)
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        mUdpHandler.start()
 
-        startScan()
+        mUdpHandler.start()
     }
 
     override fun onPause() {
@@ -46,28 +81,80 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
 
         mTimer?.cancel()
         mTimer = null
+        mScanning = false
 
         mUdpHandler.stop()
     }
 
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        outState!!.putSerializable("devices", mDevices)
+        outState.putBoolean("scanning", !mScanTimedOut)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.activity_discover, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.refresh -> {
+                startScan()
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == 0) {
+            mLastDeviceHost = ""
+            mLastDeviceName = ""
+
+            val editor = getSharedPreferences("", MODE_PRIVATE).edit()
+            editor.remove("lastDeviceName")
+            editor.remove("lastDeviceHost")
+            editor.apply()
+        }
+    }
+
     private fun startScan() {
+        if(mScanning) {
+            return
+        }
+        mScanning = true
+        mScanTimedOut = false
+
         mTimer = Timer()
-        val task = timerTask{
+        mScanningTask = timerTask{
             mUdpHandler.broadcast(UdpHandler.CMD_DISCOVER)
         }
-        mTimer?.schedule(task, 0, 7000)
+        mTimer?.schedule(mScanningTask, 0, 5000)
         mTimer?.schedule(timerTask {
-            task.cancel()
-            runOnUiThread { setStatus(0) }
+            stopScanning()
         }, 15000)
 
         val size = mDevices.size
-        mDevices.clear()
-        mDiscoveredAddresses.clear()
-        mAdapter.notifyItemRangeRemoved(0, size)
+        if(size != 0) {
+            mDevices.clear()
+            mDiscoveredAddresses.clear()
+            mAdapter.notifyItemRangeRemoved(0, size)
+        }
 
         setStatus(R.string.scanning)
         setNoDevicesVisible(true)
+    }
+
+    private fun stopScanning() {
+        runOnUiThread {
+            mScanningTask?.cancel()
+            mScanning = false
+            mScanTimedOut = true
+            setStatus(0)
+        }
     }
 
     override fun onUdpPacket(addr :InetSocketAddress, cmd :String, data :JSONObject) {
@@ -84,6 +171,11 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
                     data.getString("desc"),
                     data.optString("path", "/"),
                     data.optInt("port", 80))
+
+            if(System.currentTimeMillis() - mActivityStartTime < 500 &&
+                    mLastDeviceName == dev.name && mLastDeviceHost == dev.address.hostString) {
+                onDeviceClicked(dev)
+            }
 
             val pos = mDevices.size
             mDevices.add(dev)
@@ -110,8 +202,18 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
     }
 
     override fun onDeviceClicked(dev: Device) {
+        mLastDeviceName = dev.name
+        mLastDeviceHost = dev.address.hostString
+
+        val editor = getSharedPreferences("", MODE_PRIVATE).edit()
+        editor.putString("lastDeviceName", mLastDeviceName)
+        editor.putString("lastDeviceHost", mLastDeviceHost)
+        editor.apply()
+
         val intent = Intent(this, ControllerActivity::class.java)
         intent.putExtra("device", dev)
-        startActivity(intent)
+        startActivityForResult(intent, 0)
+
+        stopScanning()
     }
 }
