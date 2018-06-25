@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import org.json.JSONException
@@ -34,7 +36,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         val webview = findViewById<WebView>(R.id.webview)
         val settings = webview.settings
         settings.javaScriptEnabled = true
-        webview.webViewClient = WebViewClient()
+        webview.webViewClient = Client()
 
         mDevice = intent.getParcelableExtra<Device>("device")
         webview.loadUrl("http://${mDevice!!.address.hostString}:${mDevice!!.port}${mDevice!!.path}")
@@ -84,6 +86,17 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
             mUdpHandler.send(mDevice?.address as SocketAddress, command, data)
         } catch(ex :JSONException) {
             Log.e(LOG, "invalid json received from the web", ex)
+        }
+    }
+
+    inner class Client : WebViewClient() {
+        override fun shouldInterceptRequest(view: WebView?, url :String): WebResourceResponse? {
+            if(url.endsWith("/ajax/libs/nipplejs/0.6.8/nipplejs.min.js")) {
+                Log.i(LOG, "Overriding request $url")
+                val str = assets.open("nipplejs.min.js")
+                return WebResourceResponse("application/javascript", "UTF-8", str)
+            }
+            return null
         }
     }
 }
