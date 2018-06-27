@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
         msg = json.loads(msg)
         if msg["c"] == "discover":
-            print("%s: %s" % (addr, msg.decode("utf-8")))
+            print("%s: %s" % (addr, msg))
             sendmsg(sock, "found", addr, withcounter=False,
                 name="Mock", desc="MockingBoard script", path="/", port=WEB_PORT)
             continue
