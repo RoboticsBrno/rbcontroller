@@ -25,6 +25,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
     private var mReader: ReaderThread? = null
     private var mStarted = false
     private val mListener = listener
+    private var mCounterWrite = 0
 
     @Synchronized
     fun start() {
@@ -65,23 +66,26 @@ class UdpHandler(listener: OnUdpPacketListener) {
     }
 
     @Synchronized
-    private fun queuePacket(pkt :DatagramPacket) {
-        mWriter?.queuePacket(pkt)
+    private fun queuePacket(address: SocketAddress, data :JSONObject, isBroadcast :Boolean = false) {
+        if(!isBroadcast) {
+            data.put("n", mCounterWrite)
+            ++mCounterWrite
+        }
+        val buf = data.toString().toByteArray()
+        mWriter?.queuePacket(DatagramPacket(buf, buf.size, address))
     }
 
-    fun send(address: SocketAddress, command: String, params :JSONObject? = null) {
-        val data = if(params == null) {
-            """{"c":"$command"}""".toByteArray()
-        } else {
-            params.put("c", command)
-            params.toString().toByteArray()
+    fun send(address: SocketAddress, command: String, params :JSONObject? = null, isBroadcast :Boolean = false) {
+        var data = params
+        if(data == null) {
+            data = JSONObject()
         }
-
-        queuePacket(DatagramPacket(data, data.size, address))
+        data.put("c", command)
+        queuePacket(address, data, isBroadcast)
     }
 
     fun broadcast(command: String, params :JSONObject? = null) {
-        send(InetSocketAddress("255.255.255.255", BROADCAST_PORT), command, params)
+        send(InetSocketAddress("255.255.255.255", BROADCAST_PORT), command, params, true)
     }
 
     class WriterThread(socket: DatagramSocket) : Thread() {
@@ -109,6 +113,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
     class ReaderThread(socket: DatagramSocket, listener :OnUdpPacketListener) : Thread() {
         private val mSocket = socket
         private val mListener = listener
+        private val mCounters = HashMap<InetAddress, Int>()
 
         override fun run() {
             val buf = ByteArray(65535)
@@ -123,6 +128,15 @@ class UdpHandler(listener: OnUdpPacketListener) {
 
                     try {
                         val data = JSONObject(str)
+
+                        // Ignore out of order packets
+                        val n = data.optInt("n", 0)
+                        val diff = mCounters.getOrElse(pkt.address) { n } - n
+                        if (diff > 0 && diff < 300) {
+                            continue
+                        }
+                        mCounters[pkt.address] = n
+
                         val cmd = data.getString("c")
                         mListener.onUdpPacket(InetSocketAddress(pkt.address, pkt.port), cmd, data)
                     } catch(ex :Exception) {

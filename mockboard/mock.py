@@ -33,8 +33,14 @@ class ServerThread(threading.Thread):
         with http.server.HTTPServer(("", WEB_PORT), Handler) as server:
             server.serve_forever()
 
-def sendmsg(sock, cmd, address, **params):
+writecounter = 0
+def sendmsg(sock, cmd, address, withcounter=True, **params):
+    global writecounter
+
     params["c"] = cmd
+    if withcounter:
+        params["n"] = writecounter
+        writecounter += 1
     data = json.dumps(params).encode("utf-8")
     sock.sendto(data, address)
 
@@ -44,14 +50,28 @@ if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', BROADCAST_PORT))
 
+    readcounter = 0
+    writecounter = 0
     while True:
         msg, addr = sock.recvfrom(65535)
         print("%s: %s" % (addr, msg.decode("utf-8")))
 
         msg = json.loads(msg)
         if msg["c"] == "discover":
-            sendmsg(sock, "found", addr, name="Mock", desc="MockingBoard script", path="/", port=WEB_PORT)
-        elif msg["c"] == "ping":
+            sendmsg(sock, "found", addr, withcounter=False,
+                name="Mock", desc="MockingBoard script", path="/", port=WEB_PORT)
+            continue
+
+        if msg["n"] == -1:
+            readcounter = 0
+            writecounter = 0
+        elif msg["n"] < readcounter and readcounter - msg["n"] < 300:
+            print("ignore")
+            continue
+        else:
+            readcounter = msg["n"]
+
+        if msg["c"] == "ping":
             sendmsg(sock, "pong", addr)
 
 
