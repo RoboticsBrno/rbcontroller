@@ -90,10 +90,20 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
     }
 
     inner class Client : WebViewClient() {
+        private val mOverrides = setOf(
+                "nipplejs.min.js",
+                "reconnecting-websocket.min.js"
+        )
+
         override fun shouldInterceptRequest(view: WebView?, url :String): WebResourceResponse? {
-            if(url.endsWith("/ajax/libs/nipplejs/0.6.8/nipplejs.min.js")) {
+            val idx = url.lastIndexOf("/")
+            if(idx == -1){
+                return null
+            }
+            val filename = url.substring(idx+1)
+            if(mOverrides.contains(filename)) {
                 Log.i(LOG, "Overriding request $url")
-                val str = assets.open("nipplejs.min.js")
+                val str = assets.open(filename)
                 return WebResourceResponse("application/javascript", "UTF-8", str)
             }
             return null
