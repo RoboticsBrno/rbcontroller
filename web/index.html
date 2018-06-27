@@ -6,16 +6,78 @@
   <meta name="viewport" content="width=device-width, user-scalable=no" />
 
   <style>
+  .joy {
+    position: absolute;
+    height: 175px;
+    width: 175px;
+  }
+  #joy1 {
+    bottom: 175px
+  }
+
+  @media all and (min-width: 360px) {
+    .joy {
+      height: 250px;
+      width: 250px;
+    }
+    #joy1 {
+      bottom: 250px;
+    }
+  }
+  @media all and (min-width: 900px) {
+    .joy {
+      height: 400px;
+      width: 400px;
+    }
+    #joy1 {
+      bottom: 400px;
+    }
+  }
+
+  @media all and (orientation:portrait) {
+    #joy0 {
+      right: 0px;
+      bottom: 25px;
+    }
+    @media all and (max-width: 580px) {
+      #joy0 {
+        margin-left: auto;
+        margin-right: auto;
+        left: 0px;
+        right: 0px;
+      }
+    }
+
+    #joy1 {
+      left: 0px;
+    }
+  }
+  @media all and (orientation:landscape) {
+    #joy0 {
+      right: 0px;
+      bottom: 0px;
+    }
+    #joy1 {
+      left: 0px;
+      bottom: 0px;
+    }
+  }
   </style>
 </head>
 
 <body>
   <h1>RBController</h1>
-  <div id="status"></div>
+  <div id="status">Status</div>
   <div id="counter"></div>
+  <div id="joysticks"></div>
+
+  <div id="joy0" class="joy"> </div>
+  <div id="joy1" class="joy"> </div>
+
 
   <script src="reconnecting-websocket.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.6.8/nipplejs.min.js"></script>
-  <script src="test.js"></script>
+
+  <script src="script.js"></script>
 </body>
 </html>

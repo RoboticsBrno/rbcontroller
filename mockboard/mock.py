@@ -5,6 +5,7 @@ import json
 import threading
 import http.server
 import os
+import sys
 
 BROADCAST_PORT = 42424
 WEB_PORT = 9000
@@ -54,10 +55,10 @@ if __name__ == "__main__":
     writecounter = 0
     while True:
         msg, addr = sock.recvfrom(65535)
-        print("%s: %s" % (addr, msg.decode("utf-8")))
 
         msg = json.loads(msg)
         if msg["c"] == "discover":
+            print("%s: %s" % (addr, msg.decode("utf-8")))
             sendmsg(sock, "found", addr, withcounter=False,
                 name="Mock", desc="MockingBoard script", path="/", port=WEB_PORT)
             continue
@@ -73,5 +74,10 @@ if __name__ == "__main__":
 
         if msg["c"] == "ping":
             sendmsg(sock, "pong", addr)
-
-
+        elif msg["c"] == "joy":
+            i = 0
+            sys.stdout.write("Joy: ")
+            for j in msg["data"]:
+                sys.stdout.write("#%d %6d %6d | " % (i, j["x"], j["y"]))
+                i += 1
+            sys.stdout.write("\r")
