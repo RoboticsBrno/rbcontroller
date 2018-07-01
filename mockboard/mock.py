@@ -6,6 +6,7 @@ import threading
 import http.server
 import os
 import sys
+import time
 
 BROADCAST_PORT = 42424
 WEB_PORT = 9000
@@ -51,6 +52,7 @@ if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', BROADCAST_PORT))
 
+    recentMustArriveCommands = {}
     readcounter = 0
     writecounter = 0
     while True:
@@ -72,6 +74,12 @@ if __name__ == "__main__":
         else:
             readcounter = msg["n"]
 
+        if "f" in msg:
+            if msg["f"] in recentMustArriveCommands:
+                continue
+            else:
+                recentMustArriveCommands[msg["f"]] = time.time()
+
         if msg["c"] == "ping":
             sendmsg(sock, "pong", addr)
         elif msg["c"] == "joy":
@@ -81,3 +89,8 @@ if __name__ == "__main__":
                 sys.stdout.write("#%d %6d %6d | " % (i, j["x"], j["y"]))
                 i += 1
             sys.stdout.write("\r")
+        elif msg["c"] == "fire":
+            print("\n\nFIRE ZE MISSILES!!\n")
+            sendmsg(sock, msg["c"], addr, **msg)
+        else:
+             print("\n%s: %s" % (addr, msg))
