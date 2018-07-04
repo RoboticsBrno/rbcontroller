@@ -2,7 +2,7 @@
 It's sending JSONs over UDP. Two sides, master & slave. The phone is the master, robot is the slave.
 
 ## Packet Object fields
-| Name    | Type     | Precence?    | Description                              |
+| Name    | Type     | Presence?    | Description                              |
 | ------- | -------- | ------------ | ---------------------------------------- |
 | c       | `string` | **REQUIRED** | The command name                         |
 | n       | `number` | **REQUIRED** | Packet counter                           |
@@ -14,7 +14,7 @@ It's sending JSONs over UDP. Two sides, master & slave. The phone is the master,
 When sending a packet, the device MUST set a `n` field to an integer higher than `n` in the previous packet or zero. The master and slave packet counters are independent. Any packets arriving out of order MUST be discarded.
 
 ## Device Discovery
-When looking for devices, the master will send following packet as a broadcast to `255.255.255.0:42424`. The `discover` and `found` commands are the only packet that MUST NOT have the packet counter. Slaves MUST always respond to the `discover` packet.
+When looking for devices, the master will send following packet as a broadcast to `255.255.255.0:42424`. The `discover` and `found` commands are the only packets that MUST NOT have the packet counter. Slaves MUST always respond to the `discover` packet.
 
 ```json
 M: { "c": "discover" }
