@@ -26,7 +26,7 @@ The `path` and `port` fields specify the path on the web server with the control
 ## MustArrive mechanism
 We need to ensure some packets really do arrive. The mechanism is simple, just re-send the packet until a response arrives.
 
-Each MustArrive packets MUST have a random 32 bit unsigned integer set as `f` or `e` field, to identify this particular packet.
+Each MustArrive packets MUST have a random 32 bit unsigned integer set as `f` or `e` field, to identify this particular packet. This id is used to ensure that the receiver does not act on the packet more than once if it is re-sent, so the receiver MUST discard all packets that have the MustArrive id the same as any previous packet.
 
 When master receives packet with `e` field set, it MUST respond with the same packet back. The packet data MAY be stripped.
 
