@@ -7,6 +7,7 @@ import http.server
 import os
 import sys
 import time
+import random
 
 BROADCAST_PORT = 42424
 WEB_PORT = 9000
@@ -35,53 +36,102 @@ class ServerThread(threading.Thread):
         with http.server.HTTPServer(("", WEB_PORT), Handler) as server:
             server.serve_forever()
 
-writecounter = 0
-def sendmsg(sock, cmd, address, withcounter=True, **params):
-    global writecounter
+class RBSocket:
+    MUST_ARRIVE_TIMER_PERIOD = 0.05
 
-    params["c"] = cmd
-    if withcounter:
-        params["n"] = writecounter
-        writecounter += 1
-    data = json.dumps(params).encode("utf-8")
-    sock.sendto(data, address)
+    def __init__(self):
+        self.read_counter = 0
+        self.write_counter = 0
 
-if __name__ == "__main__":
-    ServerThread(daemon=True).start()
+        self.recent_received_must_arrives = {}
+        self.sent_must_arrives = {}
+        self.must_arrive_timer = self.MUST_ARRIVE_TIMER_PERIOD
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('', BROADCAST_PORT))
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sock.bind(('', BROADCAST_PORT))
+        self._sock.setblocking(False)
 
-    recentMustArriveCommands = {}
-    readcounter = 0
-    writecounter = 0
-    while True:
-        msg, addr = sock.recvfrom(65535)
+    def write(self, data, address):
+        while True:
+            try:
+                self._sock.sendto(data, address)
+                return
+            except BlockingIOError:
+                continue
 
+    def send(self, address, cmd, withcounter=True, **params):
+        params["c"] = cmd
+        if withcounter:
+            params["n"] = self.write_counter
+            self.write_counter += 1
+        data = json.dumps(params).encode("utf-8")
+        self.write(data, address)
+
+    def send_must_arrive(self, address, cmd, **params):
+        id = random.randrange(0xFFFFFFFF)
+        while id in self.sent_must_arrives:
+            id = random.randrange(0xFFFFFFFF)
+
+        params["c"] = cmd
+        params["e"] = id
+        payload = json.dumps(params).encode("utf-8")
+        self.sent_must_arrives[id] = { "payload": payload, "attempts": 0, "address": address }
+        self.write(payload, address)
+
+    def update_must_arrives(self, diff):
+        if self.must_arrive_timer <= diff:
+            for ctx in self.sent_must_arrives.values():
+                self.write(ctx["payload"], ctx["address"])
+            self.must_arrive_timer = self.MUST_ARRIVE_TIMER_PERIOD
+        else:
+            self.must_arrive_timer -= diff
+
+    def receive_messages(self):
+        while True:
+            try:
+                msg, addr = self._sock.recvfrom(65535)
+                self.handle_msg(msg, addr)
+            except BlockingIOError:
+                return
+
+    def start(self):
+        last = time.time()
+        while True:
+            now = time.time()
+            self.update_must_arrives(now - last)
+            last = now
+
+            self.receive_messages()
+
+            time.sleep(0.01)
+
+    def handle_msg(self, msg, addr):
         msg = json.loads(msg)
         if msg["c"] == "discover":
             print("%s: %s" % (addr, msg))
-            sendmsg(sock, "found", addr, withcounter=False,
+            self.send(addr, "found", withcounter=False,
                 name="Mock", desc="MockingBoard script", path="/", port=WEB_PORT)
-            continue
+            return
 
         if msg["n"] == -1:
-            readcounter = 0
-            writecounter = 0
-        elif msg["n"] < readcounter and readcounter - msg["n"] < 300:
-            print("ignore")
-            continue
+            self.read_counter = 0
+            self.write_counter = 0
+        elif msg["n"] < self.read_counter and self.read_counter - msg["n"] < 300:
+            return
         else:
-            readcounter = msg["n"]
+            self.read_counter = msg["n"]
 
         if "f" in msg:
-            if msg["f"] in recentMustArriveCommands:
-                continue
+            self.send(addr, msg["c"], f=msg["f"])
+            if msg["f"] in self.recent_received_must_arrives:
+                return
             else:
-                recentMustArriveCommands[msg["f"]] = time.time()
+                self.recent_received_must_arrives[msg["f"]] = time.time()
+        elif "e" in msg:
+            del self.sent_must_arrives[msg["e"]]
 
         if msg["c"] == "ping":
-            sendmsg(sock, "pong", addr)
+            self.send(addr, "pong")
         elif msg["c"] == "joy":
             i = 0
             sys.stdout.write("Joy: ")
@@ -91,6 +141,11 @@ if __name__ == "__main__":
             sys.stdout.write("\r")
         elif msg["c"] == "fire":
             print("\n\nFIRE ZE MISSILES!!\n")
-            sendmsg(sock, msg["c"], addr, **msg)
         else:
-             print("\n%s: %s" % (addr, msg))
+            print("\n%s: %s" % (addr, msg))
+
+if __name__ == "__main__":
+    ServerThread(daemon=True).start()
+
+    sock = RBSocket()
+    sock.start()

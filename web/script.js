@@ -55,7 +55,52 @@ function Joystick(elementId, color, buttonText, buttonClickHandler) {
     }.bind(this));
 }
 
-function Manager() {
+function Log(elementId) {
+    this.el = document.getElementById(elementId);
+    this.open = false;
+    this.isTouched = false;
+
+    this.el.addEventListener("click", this.onClick.bind(this));
+
+    this.el.addEventListener("touchstart", function() {
+        this.isTouched = true;
+    }.bind(this));
+    this.el.addEventListener("touchend", function() {
+        this.isTouched = false;
+    }.bind(this));
+
+    this.scrollToBottom();
+}
+
+Log.prototype.onClick = function() {
+    this.open = !this.open;
+    if(this.open) {
+        this.el.classList.replace("log-short", "log-full")
+    } else {
+        this.el.classList.replace("log-full", "log-short")
+    }
+    this.scrollToBottom();
+}
+
+Log.prototype.scrollToBottom = function() {
+    this.el.scrollTop = this.el.scrollHeight;
+}
+
+Log.prototype.clear = function() {
+    this.el.textContent = "";
+}
+
+Log.prototype.write = function(msg, noNewLine) {
+    if(noNewLine !== true && !msg.endsWith("\n")) {
+        msg += "\n";
+    }
+    this.el.textContent += msg;
+    if(!this.isTouched) {
+        this.scrollToBottom();
+    }
+}
+
+function Manager(logElementId) {
     this.socket = null;
     this.pingsSent = 0;
     this.pingsReceived = 0;
@@ -65,6 +110,9 @@ function Manager() {
     this.MUST_ARRIVE_TIMER_FULL = 50;
     this.MUST_ARRIVE_RETRIES = 15;
     this.mustArriveTimer = this.MUST_ARRIVE_TIMER_FULL;
+    this.recentMustArriveCommands = {};
+
+    this.log = new Log(logElementId);
 }
 
 Manager.prototype.addJoystick = function(joy) {
@@ -72,10 +120,20 @@ Manager.prototype.addJoystick = function(joy) {
 }
 
 Manager.prototype.start = function(address) {
+    this.log.write("Connecting to " + address + "... ", true);
+
+    if(!('WebSocket' in window)) {
+        this.log.write("\nWebSockets are not supported on this device!");
+        return
+    }
+
     this.socket = new ReconnectingWebSocket(address);
     this.socket.addEventListener('open', function (event) {
-        setStatus("Connected, sent message");
-    });
+        this.log.write("connected!")
+    }.bind(this));
+    this.socket.addEventListener('error', function(event) {
+        this.log.write("Connection FAILED!")
+    }.bind(this));
 
     this.socket.addEventListener('message', this.onMessage.bind(this));
 
@@ -121,13 +179,22 @@ Manager.prototype.onMessage = function(event) {
     var data = JSON.parse(event.data);
     if("f" in data) {
         delete this.mustArriveCommands[data["f"]];
+    } else if("e" in data) {
+        this.socket.send(JSON.stringify({"c": data["c"], "e": data["e"]}));
+        if(data["e"] in this.recentMustArriveCommands) {
+            return;
+        } else {
+            recentMustArriveCommands[data["e"]] = Date.now();
+        }
     }
 
     switch(data["c"]) {
-    case "pong": {
+    case "pong":
         this.pingsReceived++;
         break;
-    }
+    case "log":
+        this.log.write(data["msg"]);
+        break;
     }
 }
 
@@ -152,17 +219,8 @@ Manager.prototype.updatePingCounter = function() {
         " Diff: " + (this.pingsSent - this.pingsReceived);
 }
 
-function setStatus(text) {
-    document.getElementById("status").innerHTML = text;
-}
-
 window.addEventListener("load", function(){
-    if(!('WebSocket' in window)) {
-        setStatus("WebSockets are not supported on this device!");
-        return
-    }
-
-    var man = new Manager();
+    var man = new Manager("log");
     man.addJoystick(new Joystick("joy0", "blue"));
     man.addJoystick(new Joystick("joy1", "red", "FIRE!", function() {
         man.sendMustArrive("fire", {});

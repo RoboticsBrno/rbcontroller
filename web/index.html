@@ -6,6 +6,10 @@
   <meta name="viewport" content="width=device-width, user-scalable=no" />
 
   <style>
+  body {
+    padding: 0px;
+    margin: 0px;
+  }
   .joy {
     position: absolute;
     height: 175px;
@@ -62,14 +66,32 @@
       bottom: 0px;
     }
   }
+
+  #log {
+    width: 100%;
+    font-size: 10px;
+    font-family: monospace;
+    background-color: black;
+    color: #62f442;
+    white-space: pre-line;
+    overflow: scroll;
+  }
+  .log-short {
+    height: 10em;
+    box-shadow: 0 20px 20px 0 rgba(0, 0, 0, 0.2);
+  }
+  .log-full {
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+  }
   </style>
 </head>
 
 <body>
-  <h1>RBController</h1>
-  <div id="status">Status</div>
-  <div id="counter"></div>
-  <div id="joysticks"></div>
+  <div id="log" class="log-short"> </div>
 
   <div id="joy0" class="joy"> </div>
   <div id="joy1" class="joy"> </div>
