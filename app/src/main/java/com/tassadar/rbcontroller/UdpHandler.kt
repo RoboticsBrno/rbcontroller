@@ -130,7 +130,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
                     mSocket.receive(pkt)
 
                     val str = String(pkt.data, pkt.offset, pkt.length)
-                    Log.d(UdpHandler.LOG, "Got packet from ${pkt.socketAddress}: ${String(pkt.data, pkt.offset, pkt.length)}")
+                    //Log.d(UdpHandler.LOG, "Got packet from ${pkt.socketAddress}: ${String(pkt.data, pkt.offset, pkt.length)}")
 
                     try {
                         val data = JSONObject(str)
