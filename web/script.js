@@ -46,7 +46,7 @@ function Joystick(elementId, color, buttonText, buttonClickHandler) {
 
     this.manager.on("end", function(event, data) {
         var diff = Date.now() - this.touchStart;
-        if(this.buttonClickHandler && diff < 200 && Math.abs(this.x) < 3000 && Math.abs(this.y) < 3000) {
+        if(this.buttonClickHandler && diff < 200 && Math.abs(this.x) < 5000 && Math.abs(this.y) < 5000) {
             this.buttonClickHandler();
         }
 
@@ -102,8 +102,6 @@ Log.prototype.write = function(msg, noNewLine) {
 
 function Manager(logElementId) {
     this.socket = null;
-    this.pingsSent = 0;
-    this.pingsReceived = 0;
     this.joysticks = [];
 
     this.mustArriveCommands = {};
@@ -130,7 +128,10 @@ Manager.prototype.start = function(address) {
     this.socket = new ReconnectingWebSocket(address);
     this.socket.addEventListener('open', function (event) {
         this.log.write("connected!")
+        this.log.write("Attempting to possess the robot...")
+        this.sendMustArrive("possess", {}, true);
     }.bind(this));
+    
     this.socket.addEventListener('error', function(event) {
         this.log.write("Connection FAILED!")
     }.bind(this));
@@ -162,8 +163,10 @@ Manager.prototype.update = function() {
             if (this.mustArriveCommands.hasOwnProperty(id)) {
                 var info = this.mustArriveCommands[id];
                 this.socket.send(info.payload);
-                if(++info.attempts >= this.MUST_ARRIVE_RETRIES) {
-                    delete this.mustArriveCommands[id];
+                if(info.attempts !== null) {
+                    if(++info.attempts >= this.MUST_ARRIVE_RETRIES) {
+                        delete this.mustArriveCommands[id];
+                    }
                 }
             }
         }
@@ -179,18 +182,18 @@ Manager.prototype.onMessage = function(event) {
     var data = JSON.parse(event.data);
     if("f" in data) {
         delete this.mustArriveCommands[data["f"]];
+        return;
     } else if("e" in data) {
         this.socket.send(JSON.stringify({"c": data["c"], "e": data["e"]}));
         if(data["e"] in this.recentMustArriveCommands) {
             return;
         } else {
-            recentMustArriveCommands[data["e"]] = Date.now();
+            this.recentMustArriveCommands[data["e"]] = Date.now();
         }
     }
 
     switch(data["c"]) {
     case "pong":
-        this.pingsReceived++;
         break;
     case "log":
         this.log.write(data["msg"]);
@@ -198,7 +201,7 @@ Manager.prototype.onMessage = function(event) {
     }
 }
 
-Manager.prototype.sendMustArrive = function(command, data) {
+Manager.prototype.sendMustArrive = function(command, data, unlimitedAttempts) {
     var id = 0;
     do {
         id = (Math.random() * 0xFFFFFFFF) | 0;
@@ -208,15 +211,8 @@ Manager.prototype.sendMustArrive = function(command, data) {
     data["f"] = id;
 
     var payload = JSON.stringify(data);
-    this.mustArriveCommands[id] = { "payload": payload, "attempts": 0 };
+    this.mustArriveCommands[id] = { "payload": payload, "attempts": (unlimitedAttempts !== true) ? 0 : null };
     this.socket.send(payload);
-}
-
-Manager.prototype.updatePingCounter = function() {
-    document.getElementById("counter").innerHTML =
-        "RX: " + this.pingsReceived +
-        " TX: " + this.pingsSent +
-        " Diff: " + (this.pingsSent - this.pingsReceived);
 }
 
 window.addEventListener("load", function(){

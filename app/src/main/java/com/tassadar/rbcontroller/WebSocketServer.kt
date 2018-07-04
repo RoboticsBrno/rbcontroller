@@ -16,7 +16,7 @@ class WebSocketServer(addr: InetSocketAddress, listener :OnWebSocketMessageListe
         fun onWebSocketMessage(message :String)
     }
 
-    val mListener = listener
+    private val mListener = listener
 
     override fun onOpen(conn: WebSocket?, handshake: ClientHandshake?) {
         Log.d(tServer, "onOpen: ${handshake?.resourceDescriptor} ${conn?.remoteSocketAddress?.address?.hostAddress}")
@@ -27,7 +27,7 @@ class WebSocketServer(addr: InetSocketAddress, listener :OnWebSocketMessageListe
     }
 
     override fun onMessage(conn: WebSocket?, message: String?) {
-        Log.d(tServer, "onMessage: $message")
+        //Log.d(tServer, "onMessage: $message")
 
         if(message != null) {
             mListener.onWebSocketMessage(message)

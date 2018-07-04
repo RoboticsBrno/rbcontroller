@@ -12,8 +12,7 @@ data class Device(val address: InetSocketAddress,
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
-            parcel.readInt()) {
-    }
+            parcel.readInt())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(address.hostString)

@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -37,6 +36,9 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         val settings = webview.settings
         settings.javaScriptEnabled = true
         webview.webViewClient = Client()
+
+        webview.setOnLongClickListener { return@setOnLongClickListener true }
+        webview.isLongClickable = false
 
         mDevice = intent.getParcelableExtra<Device>("device")
         webview.loadUrl("http://${mDevice!!.address.hostString}:${mDevice!!.port}${mDevice!!.path}")

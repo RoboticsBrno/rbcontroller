@@ -12,9 +12,7 @@ import org.json.JSONObject
 import java.net.InetSocketAddress
 import java.util.*
 import kotlin.concurrent.timerTask
-import android.R.menu
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 
 

@@ -38,6 +38,7 @@ class ServerThread(threading.Thread):
 
 class RBSocket:
     MUST_ARRIVE_TIMER_PERIOD = 0.05
+    MUST_ARRIVE_ATTEMPTS = 15
 
     def __init__(self):
         self.read_counter = 0
@@ -47,11 +48,14 @@ class RBSocket:
         self.sent_must_arrives = {}
         self.must_arrive_timer = self.MUST_ARRIVE_TIMER_PERIOD
 
+        self.controller_addr = None
+
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sock.bind(('', BROADCAST_PORT))
         self._sock.setblocking(False)
 
     def write(self, data, address):
+        #print("SEND %s %s" % (address, data))
         while True:
             try:
                 self._sock.sendto(data, address)
@@ -67,21 +71,30 @@ class RBSocket:
         data = json.dumps(params).encode("utf-8")
         self.write(data, address)
 
-    def send_must_arrive(self, address, cmd, **params):
+    def send_must_arrive(self, address, cmd, unlimited_attempts=False, **params):
         id = random.randrange(0xFFFFFFFF)
         while id in self.sent_must_arrives:
             id = random.randrange(0xFFFFFFFF)
 
         params["c"] = cmd
         params["e"] = id
-        payload = json.dumps(params).encode("utf-8")
-        self.sent_must_arrives[id] = { "payload": payload, "attempts": 0, "address": address }
-        self.write(payload, address)
+        self.sent_must_arrives[id] = { "payload": params, "attempts": 0 if not unlimited_attempts else None, "address": address }
+        self.send(address, cmd, **params)
+    
+    def log(self, msg):
+        if self.controller_addr:
+            self.send_must_arrive(self.controller_addr, "log", msg=msg)
 
     def update_must_arrives(self, diff):
         if self.must_arrive_timer <= diff:
-            for ctx in self.sent_must_arrives.values():
-                self.write(ctx["payload"], ctx["address"])
+            ids = list(self.sent_must_arrives.keys())
+            for id in ids:
+                ctx = self.sent_must_arrives[id]
+                self.send(ctx["address"], ctx["payload"]["c"], **ctx["payload"])
+                if ctx["attempts"] is not None:
+                    ctx["attempts"] += 1
+                    if ctx["attempts"] > self.MUST_ARRIVE_ATTEMPTS:
+                        del self.sent_must_arrives[id]
             self.must_arrive_timer = self.MUST_ARRIVE_TIMER_PERIOD
         else:
             self.must_arrive_timer -= diff
@@ -128,9 +141,17 @@ class RBSocket:
             else:
                 self.recent_received_must_arrives[msg["f"]] = time.time()
         elif "e" in msg:
-            del self.sent_must_arrives[msg["e"]]
+            try:
+                del self.sent_must_arrives[msg["e"]]
+            except KeyError:
+                pass
+            return
 
-        if msg["c"] == "ping":
+        if msg["c"] == "possess":
+            self.controller_addr = addr
+            print("Possesed by %s" % (addr, ))
+            self.log("Possessed by %s\n" % addr[0])
+        elif msg["c"] == "ping":
             self.send(addr, "pong")
         elif msg["c"] == "joy":
             i = 0
@@ -140,6 +161,7 @@ class RBSocket:
                 i += 1
             sys.stdout.write("\r")
         elif msg["c"] == "fire":
+            self.log("Fire!\n")
             print("\n\nFIRE ZE MISSILES!!\n")
         else:
             print("\n%s: %s" % (addr, msg))
