@@ -26,6 +26,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
     private var mStarted = false
     private val mListener = listener
     private var mCounterWrite = 0
+    private var mBoundPort = 0
 
     @Synchronized
     fun start() {
@@ -33,7 +34,12 @@ class UdpHandler(listener: OnUdpPacketListener) {
             mSocket = DatagramSocket(null)
             mSocket!!.broadcast = true
             mSocket!!.reuseAddress = true
-            mSocket!!.bind(null)
+            if(mBoundPort == 0) {
+                mSocket!!.bind(null)
+                mBoundPort = mSocket!!.localPort
+            } else {
+                mSocket!!.bind(InetSocketAddress(mBoundPort))
+            }
 
             Log.i(LOG, "Bound to ${mSocket!!.localSocketAddress}")
 
