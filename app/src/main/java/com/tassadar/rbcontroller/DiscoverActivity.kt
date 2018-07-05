@@ -130,7 +130,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         mScanningTask = timerTask{
             mUdpHandler.broadcast(UdpHandler.CMD_DISCOVER)
         }
-        mTimer?.schedule(mScanningTask, 0, 700)
+        mTimer?.schedule(mScanningTask, 0, 500)
         mTimer?.schedule(timerTask {
             stopScanning()
         }, 15000)
