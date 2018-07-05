@@ -40,7 +40,9 @@ class RBSocket:
     MUST_ARRIVE_TIMER_PERIOD = 0.05
     MUST_ARRIVE_ATTEMPTS = 15
 
-    def __init__(self):
+    def __init__(self, owner):
+        self.owner = owner
+
         self.read_counter = 0
         self.write_counter = 0
 
@@ -123,7 +125,7 @@ class RBSocket:
         if msg["c"] == "discover":
             print("%s: %s" % (addr, msg))
             self.send(addr, "found", withcounter=False,
-                name="Mock", desc="MockingBoard script", path="/", port=WEB_PORT)
+                owner=self.owner, name="Mock", desc="MockingBoard script", path="/", port=WEB_PORT)
             return
 
         if msg["n"] == -1:
@@ -169,5 +171,11 @@ class RBSocket:
 if __name__ == "__main__":
     ServerThread(daemon=True).start()
 
-    sock = RBSocket()
+    owner="foo"
+    if len(sys.argv) > 1:
+        owner = sys.argv[1]
+
+    print("This mock device is owned by '%s'." % owner)
+
+    sock = RBSocket(owner)
     sock.start()

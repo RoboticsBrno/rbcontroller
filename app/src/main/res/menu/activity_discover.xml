@@ -5,4 +5,10 @@
         android:icon="@drawable/ic_action_refresh"
         android:title="@string/refresh"
         app:showAsAction="always" />
+    <item android:id="@+id/change_owner"
+        android:title="@string/change_owner"
+        app:showAsAction="never"/>
+    <item android:id="@+id/other_peoples_devices"
+        android:title="@string/other_peoples_devices"
+        android:checkable="true" />
 </menu>

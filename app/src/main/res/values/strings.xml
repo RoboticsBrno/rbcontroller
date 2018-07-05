@@ -1,6 +1,12 @@
 <resources>
     <string name="app_name">RBController</string>
-    <string name="scanning">Scanning...</string>
+    <string name="scanning">Scanning for %s\'s devices…</string>
     <string name="no_devices">No devices found.</string>
     <string name="refresh">Refresh</string>
+    <string name="owner_name">Owner\'s name</string>
+    <string name="enter_name">Please enter your name.\nIt will be used to identify which robot is yours.</string>
+    <string name="save">Save</string>
+    <string name="change_owner">Change owner\'s name</string>
+    <string name="other_peoples_devices">Others\' devices</string>
+    <string name="owned_by">Owned by %s</string>
 </resources>

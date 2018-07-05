@@ -5,10 +5,12 @@ import android.os.Parcelable
 import java.net.InetSocketAddress
 
 data class Device(val address: InetSocketAddress,
+                  val owner: String,
                   val name: String, val desc: String,
                   val path: String, val port: Int) : Parcelable {
     constructor(parcel: Parcel) : this(
             InetSocketAddress(parcel.readString(), parcel.readInt()),
+            parcel.readString(),
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
@@ -17,6 +19,7 @@ data class Device(val address: InetSocketAddress,
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(address.hostString)
         parcel.writeInt(address.port)
+        parcel.writeString(owner)
         parcel.writeString(name)
         parcel.writeString(desc)
         parcel.writeString(path)

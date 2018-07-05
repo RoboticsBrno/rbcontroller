@@ -16,9 +16,11 @@ When sending a packet, the device MUST set a `n` field to an integer higher than
 ## Device Discovery
 When looking for devices, the master will send following packet as a broadcast to `255.255.255.0:42424`. The `discover` and `found` commands are the only packets that MUST NOT have the packet counter. Slaves MUST always respond to the `discover` packet.
 
+The `owner` field from the `found` packet is matched against owner entered in the Android app, and only matching devices are shown by default.
+
 ```json
 M: { "c": "discover" }
-S: { "c": "found", "name": "Robot McRobotface", "desc": "The Best Robot", "path": "/", "port": 80}
+S: { "c": "found", "owner": "John", "name": "Robot McRobotface", "desc": "The Best Robot", "path": "/", "port": 80}
 ```
 
 The `path` and `port` fields specify the path on the web server with the control page and the port to use. They are OPTIONAL and default to `/` and `80` respectively.
