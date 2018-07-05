@@ -46,7 +46,7 @@ function Joystick(elementId, color, buttonText, buttonClickHandler) {
 
     this.manager.on("end", function(event, data) {
         var diff = Date.now() - this.touchStart;
-        if(this.buttonClickHandler && diff < 200 && Math.abs(this.x) < 5000 && Math.abs(this.y) < 5000) {
+        if(this.buttonClickHandler && diff < 150 && Math.abs(this.x) < 8000 && Math.abs(this.y) < 8000) {
             this.buttonClickHandler();
         }
 
@@ -215,10 +215,19 @@ Manager.prototype.sendMustArrive = function(command, data, unlimitedAttempts) {
     this.socket.send(payload);
 }
 
+Manager.prototype.flashBody = function() {
+    var body = document.getElementById("body");
+    body.style.backgroundColor = "#ff5454";
+    setTimeout(function() {
+        body.style.backgroundColor = "white";
+    }, 50);
+}
+
 window.addEventListener("load", function(){
     var man = new Manager("log");
     man.addJoystick(new Joystick("joy0", "blue"));
     man.addJoystick(new Joystick("joy1", "red", "FIRE!", function() {
+        man.flashBody();
         man.sendMustArrive("fire", {});
     }));
 

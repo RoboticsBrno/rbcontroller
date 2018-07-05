@@ -7,10 +7,12 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.ByteArrayInputStream
 import java.net.*
 
 
@@ -35,13 +37,19 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         val webview = findViewById<WebView>(R.id.webview)
         val settings = webview.settings
         settings.javaScriptEnabled = true
+        settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
         webview.webViewClient = Client()
 
         webview.setOnLongClickListener { return@setOnLongClickListener true }
         webview.isLongClickable = false
 
         mDevice = intent.getParcelableExtra<Device>("device")
-        webview.loadUrl("http://${mDevice!!.address.hostString}:${mDevice!!.port}${mDevice!!.path}")
+
+        if(savedInstanceState != null) {
+            webview.restoreState(savedInstanceState)
+        } else {
+            webview.loadUrl("http://${mDevice!!.address.hostString}:${mDevice!!.port}${mDevice!!.path}")
+        }
     }
 
     override fun onResume() {
@@ -61,6 +69,11 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         mServer?.stop()
     }
 
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        findViewById<WebView>(R.id.webview).saveState(outState)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.activity_discover, menu)
@@ -70,7 +83,9 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.refresh -> {
-                findViewById<WebView>(R.id.webview).reload()
+                val webview = findViewById<WebView>(R.id.webview)
+                webview.clearCache(true)
+                webview.reload()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -103,7 +118,12 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
                 return null
             }
             val filename = url.substring(idx+1)
-            if(mOverrides.contains(filename)) {
+
+            if(filename == "favicon.ico") {
+                Log.i(LOG, "Overriding request $url")
+                val str = ByteArrayInputStream(ByteArray(0))
+                return WebResourceResponse("image/png", "UTF-8", str)
+            } else if(mOverrides.contains(filename)) {
                 Log.i(LOG, "Overriding request $url")
                 val str = assets.open(filename)
                 return WebResourceResponse("application/javascript", "UTF-8", str)
