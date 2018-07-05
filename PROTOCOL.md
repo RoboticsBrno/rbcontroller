@@ -6,8 +6,8 @@ It's sending JSONs over UDP. Two sides, master & slave. The phone is the master,
 | ------- | -------- | ------------ | ---------------------------------------- |
 | c       | `string` | **REQUIRED** | The command name                         |
 | n       | `number` | **REQUIRED** | Packet counter                           |
-| f       | `number` | **OPTIONAL** | MustArrive packet id sent by master   |
-| e       | `number` | **OPTIONAL** | MustArrive packet id sent by slave    |
+| f       | `number` | **OPTIONAL** | [MustArrive](https://github.com/RoboticsBrno/rbcontroller/blob/master/PROTOCOL.md#mustarrive-mechanism) packet id sent by master   |
+| e       | `number` | **OPTIONAL** | [MustArrive](https://github.com/RoboticsBrno/rbcontroller/blob/master/PROTOCOL.md#mustarrive-mechanism) packet id sent by slave    |
 | *other* | `any`    | **OPTIONAL** | The packet data                          |
 
 ### Packet counter
@@ -63,7 +63,7 @@ S: { "c": "possess", "n": 0, "f": 214312 }
 ```
 
 ### Joystick data
-The `joy` command will be send periodically as fast as possible from the master to the slave. The `x` and `x` range is <-32767;32767>.
+The `joy` command will be send periodically as fast as possible from the master to the slave. The `x` and `y` range is <-32767;32767>.
 
 ```json
 {
