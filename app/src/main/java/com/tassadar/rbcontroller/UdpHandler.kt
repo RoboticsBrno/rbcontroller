@@ -29,6 +29,11 @@ class UdpHandler(listener: OnUdpPacketListener) {
     private var mBoundPort = 0
 
     @Synchronized
+    fun resetPort() {
+        mBoundPort = 0
+    }
+
+    @Synchronized
     fun start() {
         if(!mStarted) {
             mSocket = DatagramSocket(null)
@@ -125,7 +130,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
             val buf = ByteArray(65535)
             val pkt = DatagramPacket(buf, buf.size)
             while(!this.isInterrupted) {
-                mSocket.soTimeout = 250
+                mSocket.soTimeout = 1
                 try {
                     mSocket.receive(pkt)
 
@@ -150,6 +155,12 @@ class UdpHandler(listener: OnUdpPacketListener) {
                     }
                 } catch(ex :SocketTimeoutException) {
                     // pass, check for interrupt
+                }
+
+                try {
+                    Thread.sleep(50)
+                } catch(ex :InterruptedException) {
+                    return;
                 }
             }
         }

@@ -220,7 +220,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
                     data.getString("owner"),
                     data.getString("name"),
                     data.getString("desc"),
-                    data.optString("path", "/"),
+                    data.optString("path", "/index.html"),
                     data.optInt("port", 80))
 
             if(System.currentTimeMillis() - mActivityStartTime < 500 &&

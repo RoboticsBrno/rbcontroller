@@ -85,6 +85,11 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
             R.id.refresh -> {
                 val webview = findViewById<WebView>(R.id.webview)
                 webview.clearCache(true)
+
+                mUdpHandler.stop()
+                mUdpHandler.resetPort()
+                mUdpHandler.start()
+
                 webview.reload()
                 return true
             }
