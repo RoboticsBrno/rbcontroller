@@ -23,12 +23,12 @@ M: { "c": "discover" }
 S: { "c": "found", "owner": "John", "name": "Robot McRobotface", "desc": "The Best Robot", "path": "/", "port": 80}
 ```
 
-The `path` and `port` fields specify the path on the web server with the control page and the port to use. They are OPTIONAL and default to `/` and `80` respectively.
+The `path` and `port` fields specify the path on the web server with the control page and the port to use. They are OPTIONAL and default to `/index.html` and `80` respectively.
 
 ## MustArrive mechanism
 We need to ensure some packets really do arrive. The mechanism is simple, just re-send the packet until a response arrives.
 
-Each MustArrive packets MUST have a random 32 bit unsigned integer set as `f` or `e` field, to identify this particular packet. This id is used to ensure that the receiver does not act on the packet more than once if it is re-sent, so the receiver MUST discard all packets that have the MustArrive id the same as any previous packet.
+Each MustArrive packets MUST have an incrementing 32 bit unsigned integer set as `f` or `e` field, to identify this particular packet. This id is used to ensure that the receiver does not act on the packet more than once if it is re-sent, so the receiver MUST discard all packets that have the MustArrive id the same as any previous packet. The first id value sent should be `1`, and `possess` commands from new addresses MUST never be ignored.
 
 When master receives packet with `e` field set, it MUST respond with the same packet back. The packet data MAY be stripped.
 
@@ -60,8 +60,8 @@ Once discovered, the master will start controlling the slave.
 The `possess` command MUST be the first thing sent. It tells the slave which UDP address and port is used by the master. It uses the MustArrive mechanism.
 
 ```json
-M: { "c": "possess", "n": 0, "f": 214312 }
-S: { "c": "possess", "n": 0, "f": 214312 }
+M: { "c": "possess", "n": 0, "f": 1 }
+S: { "c": "possess", "n": 0, "f": 1 }
 ```
 
 ### Joystick data
