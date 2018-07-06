@@ -76,7 +76,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater = menuInflater
-        inflater.inflate(R.menu.activity_discover, menu)
+        inflater.inflate(R.menu.activity_controller, menu)
         return true
     }
 
