@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RBController</string>
+    <string name="scanning">Hledám zařízení patřící %s…</string>
+    <string name="no_devices">Nic nenalezeno.</string>
+    <string name="refresh">Obnovit</string>
+    <string name="owner_name">Jméno majitele</string>
+    <string name="enter_name">Vyplňte své jméno.\nPoznáme podle něj která zařízení patří vám.</string>
+    <string name="save">Uložit</string>
+    <string name="change_owner">Změnit jméno majitele</string>
+    <string name="other_peoples_devices">Cizí zařízení</string>
+    <string name="owned_by">Majitel je %s</string>
+</resources>
