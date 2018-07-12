@@ -6,14 +6,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.webkit.WebResourceResponse
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.net.*
+import android.webkit.ConsoleMessage
 
 
 class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, WebSocketServer.OnWebSocketMessageListener {
@@ -39,6 +37,12 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         settings.javaScriptEnabled = true
         settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
         webview.webViewClient = Client()
+        webview.webChromeClient = object: WebChromeClient() {
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+                Log.i("WebViewConsole", consoleMessage.message())
+                return true
+            }
+        }
 
         webview.setOnLongClickListener { return@setOnLongClickListener true }
         webview.isLongClickable = false
@@ -48,7 +52,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         if(savedInstanceState != null) {
             webview.restoreState(savedInstanceState)
         } else {
-            webview.loadUrl("http://${mDevice!!.address.hostString}:${mDevice!!.port}${mDevice!!.path}")
+            webview.loadUrl("http://${mDevice!!.address.address.hostAddress}:${mDevice!!.port}${mDevice!!.path}")
         }
     }
 

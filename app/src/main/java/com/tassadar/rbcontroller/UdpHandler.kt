@@ -82,7 +82,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
             data.put("n", mCounterWrite)
             ++mCounterWrite
         }
-        val buf = data.toString().toByteArray()
+        val buf = data.toString().toByteArray();
         mWriter?.queuePacket(DatagramPacket(buf, buf.size, address))
     }
 
@@ -129,8 +129,14 @@ class UdpHandler(listener: OnUdpPacketListener) {
         override fun run() {
             val buf = ByteArray(65535)
             val pkt = DatagramPacket(buf, buf.size)
+            mSocket.soTimeout = 1
             while(!this.isInterrupted) {
-                mSocket.soTimeout = 1
+                try {
+                    Thread.sleep(16)
+                } catch(ex :InterruptedException) {
+                    return;
+                }
+
                 try {
                     mSocket.receive(pkt)
 
@@ -155,12 +161,6 @@ class UdpHandler(listener: OnUdpPacketListener) {
                     }
                 } catch(ex :SocketTimeoutException) {
                     // pass, check for interrupt
-                }
-
-                try {
-                    Thread.sleep(50)
-                } catch(ex :InterruptedException) {
-                    return;
                 }
             }
         }

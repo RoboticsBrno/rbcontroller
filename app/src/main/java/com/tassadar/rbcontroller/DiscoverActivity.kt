@@ -10,7 +10,9 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
+import android.text.method.PasswordTransformationMethod
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -21,6 +23,8 @@ import kotlin.concurrent.timerTask
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
+import android.widget.Toast
+import java.security.MessageDigest
 
 
 class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, DiscoverAdapter.OnDeviceClickedListener {
@@ -35,6 +39,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
     private var mLastDeviceName = ""
     private var mLastDeviceHost = ""
     private var mActivityStartTime :Long = 0
+    private var mMenuItemShowOthers :MenuItem? = null
 
     companion object {
         const val ACT_CONTROLLER = 0
@@ -55,7 +60,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         }
 
         val pref = getSharedPreferences("", Context.MODE_PRIVATE)
-        mAdapter.showOtherPeoplesDevices = pref.getBoolean("showOtherPeoplesDevices", false)
+        mAdapter.showOtherPeoplesDevices = pref.getBoolean("showOtherPeoplesDevices2", false)
         if(!pref.contains("owner")) {
             startActivityForResult(Intent(this, OnboardActivity::class.java), ACT_ONBOARD)
         } else {
@@ -90,7 +95,8 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         val inflater = menuInflater
         inflater.inflate(R.menu.activity_discover, menu)
 
-        menu.findItem(R.id.other_peoples_devices).isChecked = mAdapter.showOtherPeoplesDevices
+        mMenuItemShowOthers = menu.findItem(R.id.other_peoples_devices)
+        mMenuItemShowOthers!!.isChecked = mAdapter.showOtherPeoplesDevices
         return true
     }
 
@@ -105,19 +111,27 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
                 return true
             }
             R.id.other_peoples_devices -> {
-                mAdapter.showOtherPeoplesDevices = !item.isChecked
-                item.isChecked = mAdapter.showOtherPeoplesDevices
-
-                val e = getSharedPreferences("", Context.MODE_PRIVATE).edit()
-                e.putBoolean("showOtherPeoplesDevices", mAdapter.showOtherPeoplesDevices)
-                e.apply()
-
-                mAdapter.notifyDataSetChanged()
-                setNoDevicesVisible(mAdapter.itemCount == 0)
+                if(item.isChecked) {
+                    setShowOtherPeoplesDevices(!item.isChecked);
+                } else {
+                    showPassDialog();
+                }
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun setShowOtherPeoplesDevices(show: Boolean, item: MenuItem? = null) {
+        mAdapter.showOtherPeoplesDevices = show
+        mMenuItemShowOthers!!.isChecked = show
+
+        val e = getSharedPreferences("", Context.MODE_PRIVATE).edit()
+        e.putBoolean("showOtherPeoplesDevices2", show)
+        e.apply()
+
+        mAdapter.notifyDataSetChanged()
+        setNoDevicesVisible(mAdapter.itemCount == 0)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -163,7 +177,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
                 val prevSize = mDevices.size
                 mDevices.addAll(savedDevices)
                 savedDevices.forEach {
-                    mDiscoveredAddresses.add(it.address.hostString)
+                    mDiscoveredAddresses.add(it.address.address.hostAddress)
                 }
                 mAdapter.notifyItemRangeInserted(prevSize, savedDevices.size)
                 setNoDevicesVisible(false)
@@ -212,9 +226,9 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
             return
 
         runOnUiThread {
-            if(mDiscoveredAddresses.contains(addr.hostString))
+            if(mDiscoveredAddresses.contains(addr.address.hostAddress))
                 return@runOnUiThread
-            mDiscoveredAddresses.add(addr.hostString)
+            mDiscoveredAddresses.add(addr.address.hostAddress)
 
             val dev = Device(addr,
                     data.getString("owner"),
@@ -224,7 +238,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
                     data.optInt("port", 80))
 
             if(System.currentTimeMillis() - mActivityStartTime < 500 &&
-                    mLastDeviceName == dev.name && mLastDeviceHost == dev.address.hostString) {
+                    mLastDeviceName == dev.name && mLastDeviceHost == dev.address.address.hostAddress) {
                 onDeviceClicked(dev)
             }
 
@@ -270,7 +284,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
 
     override fun onDeviceClicked(dev: Device) {
         mLastDeviceName = dev.name
-        mLastDeviceHost = dev.address.hostString
+        mLastDeviceHost = dev.address.address.hostAddress
 
         val editor = getSharedPreferences("", MODE_PRIVATE).edit()
         editor.putString("lastDeviceName", mLastDeviceName)
@@ -318,6 +332,44 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) { }
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
+    }
 
+    private fun showPassDialog() {
+        val builder = AlertDialog.Builder(this)
+        val layout = View.inflate(this, R.layout.dialog_edittext, null);
+        val ed = layout.findViewById<EditText>(R.id.edittext);
+        ed.inputType = (InputType.TYPE_CLASS_TEXT.or(InputType.TYPE_TEXT_VARIATION_PASSWORD))
+        ed.transformationMethod = PasswordTransformationMethod.getInstance();
+
+        builder.setCancelable(true)
+                .setView(layout)
+                .setTitle(R.string.password)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
+                    if(sha1(ed.text.toString()) == "9371ea81d29dc0e69120d8428226dadb12a09605") {
+                        setShowOtherPeoplesDevices(true);
+                    } else {
+                        Toast.makeText(this, "Invalid password.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+    val HEX_CHARS = "0123456789abcdef".toCharArray()
+    fun sha1(input: String): String {
+        val msdDigest = MessageDigest.getInstance("SHA-1")
+        msdDigest.update(input.toByteArray(charset("UTF-8")), 0, input.length);
+
+        val result = StringBuffer()
+        msdDigest.digest().forEach {
+            val octet = it.toInt()
+            val firstIndex = (octet and 0xF0).ushr(4)
+            val secondIndex = octet and 0x0F
+            result.append(HEX_CHARS[firstIndex])
+            result.append(HEX_CHARS[secondIndex])
+        }
+
+        return result.toString()
     }
 }
