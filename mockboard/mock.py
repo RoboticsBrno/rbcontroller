@@ -10,7 +10,7 @@ import time
 import random
 
 BROADCAST_PORT = 42424
-WEB_PORT = 9000
+WEB_PORT = 9001
 
 class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
@@ -157,9 +157,13 @@ class RBSocket:
             self.send(addr, "pong")
         elif msg["c"] == "joy":
             i = 0
-            sys.stdout.write("Joy: ")
             for j in msg["data"]:
-                sys.stdout.write("#%d %6d %6d | " % (i, j["x"], j["y"]))
+                sys.stdout.write("#j%d %6d %6d | " % (i, j["x"], j["y"]))
+                i += 1
+        elif msg["c"] == "arm":
+            i = 0
+            for arm in msg["data"]:
+                sys.stdout.write("#a%d %s | " % (i, " ".join([ "%3.2f" % a for a in arm["a"] ])))
                 i += 1
             sys.stdout.write("\r")
         elif msg["c"] == "fire":
