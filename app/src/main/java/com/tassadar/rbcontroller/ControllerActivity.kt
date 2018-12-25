@@ -118,7 +118,8 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
     inner class Client : WebViewClient() {
         private val mOverrides = setOf(
                 "nipplejs.min.js",
-                "reconnecting-websocket.min.js"
+                "reconnecting-websocket.min.js",
+                "canvas-pointer.js?v=20150516"
         )
 
         override fun shouldInterceptRequest(view: WebView?, url :String): WebResourceResponse? {
