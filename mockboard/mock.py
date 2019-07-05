@@ -82,7 +82,7 @@ class RBSocket:
         params["e"] = id
         self.sent_must_arrives[id] = { "payload": params, "attempts": 0 if not unlimited_attempts else None, "address": address }
         self.send(address, cmd, **params)
-    
+
     def log(self, msg):
         if self.controller_addr:
             self.send_must_arrive(self.controller_addr, "log", msg=msg)
@@ -161,14 +161,41 @@ class RBSocket:
                 sys.stdout.write("#j%d %6d %6d | " % (i, j["x"], j["y"]))
                 i += 1
         elif msg["c"] == "arm":
-            i = 0
-            for arm in msg["data"]:
-                sys.stdout.write("#a%d %s | " % (i, " ".join([ "%3.2f" % a for a in arm["a"] ])))
-                i += 1
-            sys.stdout.write("\r")
+            sys.stdout.write(" #a %f %f    \r" % (msg["x"], msg["y"]))
         elif msg["c"] == "fire":
             self.log("Fire!\n")
             print("\n\nFIRE ZE MISSILES!!\n")
+        elif msg["c"] == "arminfo":
+            info = {
+                "height": 60,
+                "radius": 110,
+                "off_x": 0,
+                "off_y": 20,
+                "bones": [
+                    {
+                        "len": 110,
+                        "angle": -3.14/2,
+                        "rmin": -1.65806,
+                        "rmax": 0,
+                        "amin": -3.14,
+                        "amax": 3.14,
+                        "bmin": -3.14,
+                        "bmax": 3.14,
+                    },
+                    {
+                        "len": 135,
+                        "angle": -3.14/2,
+                        "rmin": 0.52,
+                        "rmax": 2.87,
+                        "amin": -0.34,
+                        "amax": 3.14,
+                        "bmin": 0.69,
+                        "bmax": 2.79,
+                    }
+                ]
+            }
+            if self.controller_addr:
+                self.send_must_arrive(self.controller_addr, "arminfo", **info)
         else:
             print("\n%s: %s" % (addr, msg))
 
