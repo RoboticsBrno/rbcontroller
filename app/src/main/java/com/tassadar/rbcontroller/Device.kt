@@ -1,5 +1,6 @@
 package com.tassadar.rbcontroller
 
+import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import java.net.InetSocketAddress
@@ -10,14 +11,18 @@ data class Device(val address: InetSocketAddress,
                   val path: String, val port: Int) : Parcelable {
     constructor(parcel: Parcel) : this(
             InetSocketAddress(parcel.readString(), parcel.readInt()),
-            parcel.readString(),
-            parcel.readString(),
-            parcel.readString(),
-            parcel.readString(),
+            parcel.readString()!!,
+            parcel.readString()!!,
+            parcel.readString()!!,
+            parcel.readString()!!,
             parcel.readInt())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(address.hostString)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            parcel.writeString(address.hostString)
+        } else {
+            parcel.writeString(address.hostName)
+        }
         parcel.writeInt(address.port)
         parcel.writeString(owner)
         parcel.writeString(name)

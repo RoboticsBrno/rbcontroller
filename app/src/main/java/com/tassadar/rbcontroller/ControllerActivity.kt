@@ -1,7 +1,6 @@
 package com.tassadar.rbcontroller
 
 import android.annotation.SuppressLint
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -12,6 +11,7 @@ import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.net.*
 import android.webkit.ConsoleMessage
+import androidx.appcompat.app.AppCompatActivity
 
 
 class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, WebSocketServer.OnWebSocketMessageListener {
@@ -73,7 +73,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         mServer?.stop()
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         findViewById<WebView>(R.id.webview).saveState(outState)
     }

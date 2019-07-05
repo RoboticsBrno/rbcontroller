@@ -6,9 +6,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -24,6 +21,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import java.security.MessageDigest
 
 
@@ -64,7 +64,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         if(!pref.contains("owner")) {
             startActivityForResult(Intent(this, OnboardActivity::class.java), ACT_ONBOARD)
         } else {
-            mAdapter.owner = pref.getString("owner", "")
+            mAdapter.owner = pref.getString("owner", "")!!
             init(savedInstanceState)
         }
     }
@@ -85,7 +85,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         mUdpHandler.stop()
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState!!.putSerializable("devices", mDevices)
         outState.putBoolean("scanning", !mScanTimedOut)
@@ -159,8 +159,8 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
 
     private fun init(savedInstanceState :Bundle?) {
         val pref = getSharedPreferences("", MODE_PRIVATE)
-        mLastDeviceName = pref.getString("lastDeviceName", "")
-        mLastDeviceHost = pref.getString("lastDeviceHost", "")
+        mLastDeviceName = pref.getString("lastDeviceName", "")!!
+        mLastDeviceHost = pref.getString("lastDeviceHost", "")!!
         mActivityStartTime = System.currentTimeMillis()
 
         mUdpHandler.start()

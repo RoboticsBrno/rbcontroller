@@ -1,11 +1,12 @@
 package com.tassadar.rbcontroller
 
-import android.support.v7.widget.RecyclerView
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 
 class DiscoverAdapter(dataset: ArrayList<Device>, listener :OnDeviceClickedListener) : RecyclerView.Adapter<DiscoverAdapter.ViewHolder>() {
     class ViewHolder(val layout: ViewGroup) : RecyclerView.ViewHolder(layout)
@@ -42,7 +43,11 @@ class DiscoverAdapter(dataset: ArrayList<Device>, listener :OnDeviceClickedListe
         }
 
         l.findViewById<TextView>(R.id.name).text = dev.name
-        l.findViewById<TextView>(R.id.address).text = dev.address.hostString
+        l.findViewById<TextView>(R.id.address).text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            dev.address.hostString
+        } else {
+            dev.address.hostName
+        }
         l.findViewById<TextView>(R.id.desc).text = dev.desc
 
         val ownerText = l.findViewById<TextView>(R.id.owner)
