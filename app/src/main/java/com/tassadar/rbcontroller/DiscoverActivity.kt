@@ -346,7 +346,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
                 .setTitle(R.string.password)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
-                    if(sha1(ed.text.toString()) == "9371ea81d29dc0e69120d8428226dadb12a09605") {
+                    if(sha256(ed.text.toString()) == "5220a9d332af0fb806fb1a4ecd38f86dbacb78b5cf372a3155f7a8c3e466f811") {
                         setShowOtherPeoplesDevices(true);
                     } else {
                         Toast.makeText(this, "Invalid password.", Toast.LENGTH_SHORT).show();
@@ -357,8 +357,10 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
     }
 
     val HEX_CHARS = "0123456789abcdef".toCharArray()
-    fun sha1(input: String): String {
-        val msdDigest = MessageDigest.getInstance("SHA-1")
+    fun sha256(input: String): String {
+        val salt = "TK1tx1XUWZe+52M2eo2oebEZPhZ4gXmFzHQvl6v75VkFwwKuvqEUlcRFliPfSddeVuNwMtln1XHl:";
+        val msdDigest = MessageDigest.getInstance("SHA-256")
+        msdDigest.update(salt.toByteArray(charset("UTF-8")), 0, salt.length)
         msdDigest.update(input.toByteArray(charset("UTF-8")), 0, input.length);
 
         val result = StringBuffer()
