@@ -36,6 +36,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         val settings = webview.settings
         settings.javaScriptEnabled = true
         settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+        settings.domStorageEnabled = true
         webview.webViewClient = Client()
         webview.webChromeClient = object: WebChromeClient() {
             override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
@@ -89,6 +90,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
             R.id.refresh -> {
                 val webview = findViewById<WebView>(R.id.webview)
                 webview.clearCache(true)
+                WebStorage.getInstance().deleteAllData()
 
                 mUdpHandler.stop()
                 mUdpHandler.resetPort()
