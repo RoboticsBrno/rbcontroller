@@ -32,14 +32,26 @@ class DiscoverAdapter(dataset: ArrayList<Device>, listener :OnDeviceClickedListe
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val l = holder.layout
-        val dev = mDataset.get(position)
+        var filteredIdx = 0
+
+        var dev :Device? = null
+        for(i in mDataset.indices) {
+            if(showOtherPeoplesDevices || mDataset[i].owner == owner) {
+                if(filteredIdx == position) {
+                    dev = mDataset[i]
+                    break
+                }
+                ++filteredIdx
+            }
+        }
+
+        if(dev == null)
+            return
 
         if(dev.owner == owner) {
             l.alpha = 1.0f
-            Log.e("test", "set to 1 $owner ${dev.owner} $position")
         } else {
             l.alpha = 0.35f
-            Log.e("test", "set to 0.35 $owner ${dev.owner} $position")
         }
 
         l.findViewById<TextView>(R.id.name).text = dev.name
