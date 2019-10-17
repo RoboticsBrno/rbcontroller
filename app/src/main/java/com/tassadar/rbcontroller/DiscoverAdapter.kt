@@ -55,11 +55,7 @@ class DiscoverAdapter(dataset: ArrayList<Device>, listener :OnDeviceClickedListe
         }
 
         l.findViewById<TextView>(R.id.name).text = dev.name
-        l.findViewById<TextView>(R.id.address).text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            dev.address.hostString
-        } else {
-            dev.address.hostName
-        }
+        l.findViewById<TextView>(R.id.address).text = dev.address.hostString
         l.findViewById<TextView>(R.id.desc).text = dev.desc
 
         val ownerText = l.findViewById<TextView>(R.id.owner)

@@ -37,6 +37,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         settings.javaScriptEnabled = true
         settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
         settings.domStorageEnabled = true
+        settings.setAppCacheEnabled(true)
         webview.webViewClient = Client()
         webview.webChromeClient = object: WebChromeClient() {
             override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {

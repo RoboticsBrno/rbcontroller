@@ -18,11 +18,7 @@ data class Device(val address: InetSocketAddress,
             parcel.readInt())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            parcel.writeString(address.hostString)
-        } else {
-            parcel.writeString(address.hostName)
-        }
+        parcel.writeString(address.hostString)
         parcel.writeInt(address.port)
         parcel.writeString(owner)
         parcel.writeString(name)
