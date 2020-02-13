@@ -1,6 +1,7 @@
 package com.tassadar.rbcontroller
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -11,6 +12,7 @@ import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.net.*
 import android.webkit.ConsoleMessage
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 
 
@@ -35,6 +37,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         val webview = findViewById<WebView>(R.id.webview)
         val settings = webview.settings
         settings.javaScriptEnabled = true
+        settings.userAgentString = "RBController ${BuildConfig.VERSION_NAME}"
         settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
         settings.domStorageEnabled = true
         settings.setAppCacheEnabled(true)
@@ -123,6 +126,14 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
                 "nipplejs.min.js",
                 "reconnecting-websocket.min.js"
         )
+
+        /*@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+        override fun shouldInterceptRequest(view: WebView?, req: WebResourceRequest?): WebResourceResponse? {
+            for((k,v) in req!!.requestHeaders) {
+                Log.e(LOG, "Header ${v.length} $k $v")
+            }
+            return super.shouldInterceptRequest(view, req)
+        }*/
 
         override fun shouldInterceptRequest(view: WebView?, url :String): WebResourceResponse? {
             val idx = url.lastIndexOf("/")
