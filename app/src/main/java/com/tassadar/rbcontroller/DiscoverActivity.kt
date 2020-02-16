@@ -87,7 +87,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState!!.putSerializable("devices", mDevices)
+        outState.putSerializable("devices", mDevices)
         outState.putBoolean("scanning", !mScanTimedOut)
     }
 
@@ -122,7 +122,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         }
     }
 
-    private fun setShowOtherPeoplesDevices(show: Boolean, item: MenuItem? = null) {
+    private fun setShowOtherPeoplesDevices(show: Boolean) {
         mAdapter.showOtherPeoplesDevices = show
         mMenuItemShowOthers!!.isChecked = show
 
@@ -148,7 +148,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
             }
             ACT_ONBOARD -> {
                 if(resultCode == Activity.RESULT_OK) {
-                    mAdapter.owner = data!!.getStringExtra("owner")
+                    mAdapter.owner = data!!.getStringExtra("owner")!!
                     init(null)
                 } else {
                     finish()
