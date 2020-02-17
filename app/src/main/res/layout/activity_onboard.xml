@@ -4,68 +4,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".OnboardActivity"
+    tools:context=".onboard.OnboardActivity"
     android:orientation="vertical">
 
-    <View
-        android:layout_width="wrap_content"
+    <FrameLayout
+        android:id="@+id/fragment_root"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1">
+    </FrameLayout>
 
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="128dp"
-        android:layout_height="128dp"
-        android:layout_gravity="center_horizontal"
-        android:src="@drawable/robotarna_logo"
-        android:scaleX="0.0"
-        android:scaleY="0.0"/>
-    <TextView
-        android:id="@+id/robotarna_text"
-        android:layout_width="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textSize="10pt"
-        android:textStyle="bold"
-        android:alpha="0"/>
-
-    <View
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
-    <EditText
-        android:id="@+id/owner_edit"
-        android:layout_gravity="center_horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="@string/owner_name"
-        android:minWidth="160dp"
-        android:layout_marginBottom="8dp"
-        android:alpha="0"/>
-    <TextView
-        android:id="@+id/owner_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/enter_name"
-        android:maxWidth="250dp"
-        android:alpha="0"/>
-
-    <View
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
-    <Button android:id="@+id/save_button"
+    <Button android:id="@+id/next_button"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="@drawable/button_primary"
         android:textColor="@android:color/white"
-        android:text="@string/save"
-        android:alpha="0"
-        android:onClick="onSaveClicked"
+        android:text="@string/next"
+        android:onClick="onNextClicked"
         android:enabled="false"/>
 
 </LinearLayout>

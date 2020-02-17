@@ -1,6 +1,12 @@
 package com.tassadar.rbcontroller
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import org.json.JSONObject
 import java.io.IOException
 import java.net.*
@@ -8,7 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue
 
 class UdpHandler(listener: OnUdpPacketListener) {
     companion object {
-        const val LOG = "RBController:UdpHandler"
+        const val LOG = "RB:UdpHandler"
         const val BROADCAST_PORT = 42424
 
         const val CMD_DISCOVER = "discover"
@@ -28,38 +34,78 @@ class UdpHandler(listener: OnUdpPacketListener) {
     private var mCounterWrite = 0
     private var mBoundPort = 0
 
-    @Synchronized
-    fun resetPort() {
+    fun resetPort() = synchronized(this) {
         mBoundPort = 0
     }
 
-    @Synchronized
-    fun start() {
-        if(!mStarted) {
-            mSocket = DatagramSocket(null)
-            mSocket!!.broadcast = true
-            mSocket!!.reuseAddress = true
-            if(mBoundPort == 0) {
+    @Suppress("DEPRECATION")
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private fun bindToNetwork(connMgr: ConnectivityManager, net: Network?) {
+        Log.i(LOG, "Using network $net")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            connMgr.bindProcessToNetwork(net);
+        } else {
+            ConnectivityManager.setProcessDefaultNetwork(net);
+        }
+    }
+
+    fun start(context: Context) = synchronized(this) {
+        if(mStarted) {
+            return
+        }
+
+        val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            connMgr.allNetworks.find { net ->
+                val caps = connMgr.getNetworkCapabilities(net)
+                if (caps == null)
+                    false
+                else if (!caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) && !caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))
+                    false
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_FOREGROUND))
+                    false
+                else
+                    true
+            }.let { net ->
+                bindToNetwork(connMgr, net)
+            }
+        }
+
+        try {
+            mSocket = DatagramSocket()
+        } catch(e :SocketException) {
+            e.printStackTrace()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                bindToNetwork(connMgr, null)
+                mSocket = DatagramSocket()
+            } else {
+                throw e
+            }
+        }
+
+        mSocket!!.broadcast = true
+        mSocket!!.reuseAddress = true
+        if(!mSocket!!.isBound) {
+            if (mBoundPort == 0) {
                 mSocket!!.bind(null)
                 mBoundPort = mSocket!!.localPort
             } else {
                 mSocket!!.bind(InetSocketAddress(mBoundPort))
             }
-
-            Log.i(LOG, "Bound to ${mSocket!!.localSocketAddress}")
-
-            mWriter = WriterThread(mSocket!!)
-            mWriter?.start()
-
-            mReader = ReaderThread(mSocket!!, mListener)
-            mReader?.start()
-
-            mStarted = true
         }
+
+        Log.i(LOG, "Bound to ${mSocket!!.localSocketAddress}")
+
+        mWriter = WriterThread(mSocket!!)
+        mWriter?.start()
+
+        mReader = ReaderThread(mSocket!!, mListener)
+        mReader?.start()
+
+        mStarted = true
     }
 
-    @Synchronized
-    fun stop() {
+    fun stop() = synchronized(this) {
         if(mStarted) {
             mWriter?.interrupt()
             mWriter?.join()
@@ -76,8 +122,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
         }
     }
 
-    @Synchronized
-    private fun queuePacket(address: SocketAddress, data :JSONObject, isBroadcast :Boolean = false) {
+    private fun queuePacket(address: SocketAddress, data :JSONObject, isBroadcast :Boolean = false) = synchronized(this) {
         if(!isBroadcast) {
             data.put("n", mCounterWrite)
             ++mCounterWrite
@@ -132,13 +177,15 @@ class UdpHandler(listener: OnUdpPacketListener) {
             mSocket.soTimeout = 1
             while(!this.isInterrupted) {
                 try {
-                    Thread.sleep(16)
+                    sleep(16)
                 } catch(ex :InterruptedException) {
                     return;
                 }
 
                 try {
                     mSocket.receive(pkt)
+
+                    pkt.socketAddress
 
                     val str = String(pkt.data, pkt.offset, pkt.length)
                     //Log.d(UdpHandler.LOG, "Got packet from ${pkt.socketAddress}: ${String(pkt.data, pkt.offset, pkt.length)}")

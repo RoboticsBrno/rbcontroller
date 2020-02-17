@@ -8,4 +8,16 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="EditActivityTheme" parent="Theme.AppCompat.Light">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="actionBarStyle">@style/WhiteActionBar</item>
+    </style>
+
+    <style name="WhiteActionBar" parent="@style/Widget.AppCompat.ActionBar.Solid">
+        <item name="background">@android:color/white</item>
+    </style>
+
 </resources>

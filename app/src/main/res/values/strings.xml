@@ -7,8 +7,66 @@
     <string name="owner_name">Owner\'s name</string>
     <string name="enter_name">Please enter your name.\nIt will be used to identify which robot is yours.</string>
     <string name="save">Save</string>
+    <string name="next">Next</string>
     <string name="change_owner">Change owner\'s name</string>
     <string name="other_peoples_devices">Others\' devices</string>
     <string name="owned_by">Owned by %s</string>
     <string name="password">Enter password</string>
+    <string name="enable_bt">Enable Bluetooth to get faster scanning and WiFi management features.</string>
+    <string name="configure_wifi">Configure WiFi</string>
+    <string name="mode">Mode</string>
+    <string name="connect_to_existing_wifi">Connect to existing WiFi</string>
+    <string name="serve_as_access_point">Serve as Access Point</string>
+    <string name="wifi_ap_channel">WiFi AP Channel</string>
+    <string name="wifi_list_desc">
+        Unfortunately, RBControl can\'t use your device\'s WiFi configurations due to Android\'s security measures.\n\nInstead,
+        RBControl will keep WiFi configurations for your robot stored here.
+    </string>
+    <string name="add_configuration">Add configuration</string>
+    <string name="beep">Beep</string>
+    <string name="wifi_config_title">%s\'s WiFi Config</string>
+    <string name="mode_station">Use existing network</string>
+    <string name="mode_ap">Access Point at channel #%d</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="undo">Undo</string>
+    <string name="wifi_cfg_deleted">Network \'%s\' deleted</string>
+    <string name="bluetooth_not_enabled">bluetooth is not enabled</string>
+    <string name="bluetooth_invalid_device">invalid bluetooth device address</string>
+    <string name="bluetooth_connect_failed">bluetooth connection could not be established</string>
+    <string name="bluetooth_no_service">device doesn\'t have the required GATT service</string>
+    <string name="bluetooth_no_characteristic">devices doen\'t have the requried GATT characteristic</string>
+    <string name="writing_wifi_config">Writing WiFi configuration…</string>
+    <string name="wifi_write_error">Failed: %s</string>
+    <string name="rescan_message">This robot and your device is on the same WiFi, but RBControl can\'t determine its IP. Try rescanning the network.</string>
+    <string name="rescan">Rescan</string>
+    <string name="enable_wifi">Please turn the WiFi on.</string>
+    <string name="wifi_failed_to_add">Failed to add new WiFi network.</string>
+    <string name="wifi_failed_to_enable">Failed to switch to the Robot\'s WiFi network.</string>
+    <string name="wifi_timed_out">Timed out when trying to connect to robot\'s WiFi.</string>
+    <string name="connecting_to_wifi">Connecting to %s…</string>
+    <string name="wifi_too_many_requests">Too many WiFi changes in a short time, please connect to the network manually.</string>
+    <string name="unable_to_configure_wifi">Can\'t configure WiFi on this robot because it was not found using Bluetooth.</string>
+    <string name="onboard_ble"><![CDATA[
+        <p><big>This version of RBControl supports using Bluetooth to find robots and configure them.</big></p>
+        <p>In order to use Bluetooth on Android, RBControl must <b>request the permission to access location.</b></p>
+        <p>If you wish to use the Bluetooth-related features, please <b>allow RBControl to use this permission</b> in the next step.</p>
+        <p><small>The robot\'s software also requires an update in order to support these Bluetooth features.</small></p>
+    ]]></string>
+
+    <string-array name="wifi_channel">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+    </string-array>
 </resources>

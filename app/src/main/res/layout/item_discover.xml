@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
+    android:padding="12dp"
     android:clickable="true"
+    android:longClickable="true"
     android:focusable="true"
     android:background="?android:attr/selectableItemBackground">
 
@@ -22,7 +24,7 @@
         android:id="@+id/address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@id/name"
+        android:layout_below="@id/ic_wifi"
         android:layout_alignParentEnd="true"
         android:textColor="@android:color/darker_gray"
         tools:text="192.168.42.222" />
@@ -31,8 +33,9 @@
         android:id="@+id/owner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/desc"
+        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
         android:textColor="#ff0000"
         android:textStyle="bold"
         tools:text="Owned by Foo" />
@@ -45,4 +48,52 @@
         android:layout_below="@id/name"
         tools:text="MockingBoard script" />
 
+    <ImageView
+        android:id="@+id/ic_wifi"
+        android:layout_width="10pt"
+        android:layout_height="10pt"
+        android:layout_margin="2dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        app:srcCompat="@drawable/ic_wifi" />
+
+    <ImageView
+        android:id="@+id/ic_bluetooth"
+        android:layout_width="10pt"
+        android:layout_height="10pt"
+        android:layout_margin="2dp"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/ic_wifi"
+        app:srcCompat="@drawable/ic_bluetooth" />
+
+    <ImageView
+        android:id="@+id/ic_wifi_ap"
+        android:layout_width="10pt"
+        android:layout_height="10pt"
+        android:layout_margin="2dp"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/ic_bluetooth"
+        android:tint="@color/colorAccent"
+        app:srcCompat="@drawable/ic_wifi_ap" />
+
+    <ImageView
+        android:id="@+id/ic_battery"
+        android:layout_width="10pt"
+        android:layout_height="10pt"
+        android:layout_marginTop="2dp"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/ic_wifi_ap"
+        app:srcCompat="@drawable/ic_battery" />
+
+    <TextView
+        android:id="@+id/battery_pct"
+        android:layout_width="wrap_content"
+        android:layout_height="10pt"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:layout_toStartOf="@+id/ic_battery"
+        android:gravity="center_vertical"
+        android:textColor="@android:color/darker_gray"
+        tools:text="82%" />
 </RelativeLayout>
