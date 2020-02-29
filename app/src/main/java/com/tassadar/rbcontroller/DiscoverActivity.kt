@@ -141,9 +141,9 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
             }
             R.id.other_peoples_devices -> {
                 if(item.isChecked) {
-                    setShowOtherPeoplesDevices(!item.isChecked);
+                    setShowOtherPeoplesDevices(!item.isChecked)
                 } else {
-                    showPassDialog();
+                    showPassDialog()
                 }
                 return true
             }
@@ -442,8 +442,8 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
 
     private fun showRenameDialog() {
         val builder = AlertDialog.Builder(this)
-        val layout = View.inflate(this, R.layout.dialog_edittext, null);
-        val ed = layout.findViewById<EditText>(R.id.edittext);
+        val layout = View.inflate(this, R.layout.dialog_edittext, null)
+        val ed = layout.findViewById<EditText>(R.id.edittext)
         ed.setText(mDevices.getOwner())
         ed.setHint(R.string.owner_name)
         ed.filters = arrayOf(AsciiInputFilter())
@@ -478,10 +478,10 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
 
     private fun showPassDialog() {
         val builder = AlertDialog.Builder(this)
-        val layout = View.inflate(this, R.layout.dialog_edittext, null);
-        val ed = layout.findViewById<EditText>(R.id.edittext);
+        val layout = View.inflate(this, R.layout.dialog_edittext, null)
+        val ed = layout.findViewById<EditText>(R.id.edittext)
         ed.inputType = (InputType.TYPE_CLASS_TEXT.or(InputType.TYPE_TEXT_VARIATION_PASSWORD))
-        ed.transformationMethod = PasswordTransformationMethod.getInstance();
+        ed.transformationMethod = PasswordTransformationMethod.getInstance()
 
         builder.setCancelable(true)
                 .setView(layout)
@@ -489,9 +489,9 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                     if(sha256(ed.text.toString()) == "5220a9d332af0fb806fb1a4ecd38f86dbacb78b5cf372a3155f7a8c3e466f811") {
-                        setShowOtherPeoplesDevices(true);
+                        setShowOtherPeoplesDevices(true)
                     } else {
-                        Toast.makeText(this, "Invalid password.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Invalid password.", Toast.LENGTH_SHORT).show()
                     }
                 }
         val dialog = builder.create()
@@ -499,11 +499,11 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
     }
 
     private val HEX_CHARS = "0123456789abcdef".toCharArray()
-    fun sha256(input: String): String {
-        val salt = "TK1tx1XUWZe+52M2eo2oebEZPhZ4gXmFzHQvl6v75VkFwwKuvqEUlcRFliPfSddeVuNwMtln1XHl:";
+    private fun sha256(input: String): String {
+        val salt = "TK1tx1XUWZe+52M2eo2oebEZPhZ4gXmFzHQvl6v75VkFwwKuvqEUlcRFliPfSddeVuNwMtln1XHl:"
         val msdDigest = MessageDigest.getInstance("SHA-256")
         msdDigest.update(salt.toByteArray(charset("UTF-8")), 0, salt.length)
-        msdDigest.update(input.toByteArray(charset("UTF-8")), 0, input.length);
+        msdDigest.update(input.toByteArray(charset("UTF-8")), 0, input.length)
 
         val result = StringBuffer()
         msdDigest.digest().forEach {

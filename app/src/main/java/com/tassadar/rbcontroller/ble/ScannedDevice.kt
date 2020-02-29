@@ -46,7 +46,7 @@ internal class ScannedDevice(private val gatt: BluetoothGatt) {
         synchronized(mLock) {
             if(mClosed)
                 return
-            mClosed = true;
+            mClosed = true
 
             mOpQueue.clear()
             mOpQueue.add(OpQueueItem(OpType.OP_CLOSE, null))

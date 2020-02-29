@@ -94,7 +94,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.refresh -> {
                 val webview = findViewById<WebView>(R.id.webview)
                 webview.clearCache(true)
@@ -105,9 +105,9 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
                 mUdpHandler.start(this)
 
                 webview.reload()
-                return true
+                true
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

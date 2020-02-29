@@ -307,7 +307,7 @@ class WifiConfigList : AppCompatActivity(), WifiConfigListAdapter.OnWifiConfigCl
         mWriteTask = WifiConfigWriteTask(this)
         mWriteTask!!.execute(params)
 
-        val layout = View.inflate(this, R.layout.dialog_progress, null);
+        val layout = View.inflate(this, R.layout.dialog_progress, null)
         layout.findViewById<TextView>(R.id.text).setText(R.string.writing_wifi_config)
 
         mWriteDialog = AlertDialog.Builder(this)

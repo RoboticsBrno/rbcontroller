@@ -59,7 +59,7 @@ object WifiConnector {
         private var mDialog: AlertDialog? = null
 
         open fun connect() {
-            val layout = View.inflate(mContext, R.layout.dialog_progress, null);
+            val layout = View.inflate(mContext, R.layout.dialog_progress, null)
             layout.findViewById<TextView>(R.id.text).text = mContext.getString(R.string.connecting_to_wifi, mSsid)
 
             mDialog = AlertDialog.Builder(mContext)

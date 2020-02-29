@@ -1,9 +1,9 @@
 package com.tassadar.rbcontroller
 
 import android.text.InputFilter
+import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
-import android.text.SpannableString
 
 
 class AsciiInputFilter : InputFilter {
@@ -18,15 +18,15 @@ class AsciiInputFilter : InputFilter {
                 keepOriginal = false
         }
 
-        if (keepOriginal)
-            return null;
-        else {
+        return if (keepOriginal) {
+            null
+        } else {
             if (source is Spanned) {
                 val sp = SpannableString(sb)
                 TextUtils.copySpansFrom(source, start, end, null, sp, 0)
-                return sp
+                sp
             } else {
-                return sb
+                sb
             }
         }
     }
