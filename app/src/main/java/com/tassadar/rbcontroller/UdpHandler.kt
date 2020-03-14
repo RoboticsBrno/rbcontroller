@@ -49,6 +49,14 @@ class UdpHandler(listener: OnUdpPacketListener) {
         }
     }
 
+    private fun newSocket(): DatagramSocket {
+        return if(mBoundPort != 0) {
+            DatagramSocket(InetSocketAddress(mBoundPort))
+        } else {
+            DatagramSocket()
+        }
+    }
+
     fun start(context: Context) = synchronized(this) {
         if(mStarted) {
             return
@@ -71,13 +79,13 @@ class UdpHandler(listener: OnUdpPacketListener) {
             }
         }
 
-        try {
-            mSocket = DatagramSocket()
+        mSocket = try {
+            newSocket()
         } catch(e :SocketException) {
             e.printStackTrace()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 bindToNetwork(connMgr, null)
-                mSocket = DatagramSocket()
+                newSocket()
             } else {
                 throw e
             }
@@ -86,15 +94,11 @@ class UdpHandler(listener: OnUdpPacketListener) {
         mSocket!!.broadcast = true
         mSocket!!.reuseAddress = true
         if(!mSocket!!.isBound) {
-            if (mBoundPort == 0) {
-                mSocket!!.bind(null)
-                mBoundPort = mSocket!!.localPort
-            } else {
-                mSocket!!.bind(InetSocketAddress(mBoundPort))
-            }
+            mSocket!!.bind(null)
         }
 
         Log.i(LOG, "Bound to ${mSocket!!.localSocketAddress}")
+        mBoundPort = mSocket!!.localPort
 
         mWriter = WriterThread(mSocket!!)
         mWriter?.start()
