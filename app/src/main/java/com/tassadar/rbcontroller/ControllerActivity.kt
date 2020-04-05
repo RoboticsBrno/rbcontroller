@@ -44,7 +44,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         val settings = webview.settings
         settings.javaScriptEnabled = true
         settings.userAgentString = "RBController ${BuildConfig.VERSION_NAME}"
-        settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+        settings.cacheMode = WebSettings.LOAD_DEFAULT
         settings.domStorageEnabled = true
         settings.setAppCacheEnabled(true)
         webview.webViewClient = Client()
