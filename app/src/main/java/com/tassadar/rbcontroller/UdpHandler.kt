@@ -148,7 +148,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
         send(InetSocketAddress("255.255.255.255", BROADCAST_PORT), command, params, true)
     }
 
-    class WriterThread(socket: DatagramSocket) : Thread() {
+    class WriterThread(socket: DatagramSocket) : Thread("RbWriterThread") {
         private val mSocket :DatagramSocket = socket
         private val mQueue = LinkedBlockingQueue<DatagramPacket>()
 
@@ -170,7 +170,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
         }
     }
 
-    class ReaderThread(socket: DatagramSocket, listener :OnUdpPacketListener) : Thread() {
+    class ReaderThread(socket: DatagramSocket, listener :OnUdpPacketListener) : Thread("RbReaderThread") {
         private val mSocket = socket
         private val mListener = listener
         private val mCounters = HashMap<InetAddress, Int>()
@@ -178,18 +178,10 @@ class UdpHandler(listener: OnUdpPacketListener) {
         override fun run() {
             val buf = ByteArray(65535)
             val pkt = DatagramPacket(buf, buf.size)
-            mSocket.soTimeout = 1
+            mSocket.soTimeout = 50
             while(!this.isInterrupted) {
                 try {
-                    sleep(16)
-                } catch(ex :InterruptedException) {
-                    return;
-                }
-
-                try {
                     mSocket.receive(pkt)
-
-                    pkt.socketAddress
 
                     val str = String(pkt.data, pkt.offset, pkt.length)
                     //Log.d(UdpHandler.LOG, "Got packet from ${pkt.socketAddress}: ${String(pkt.data, pkt.offset, pkt.length)}")
@@ -200,7 +192,7 @@ class UdpHandler(listener: OnUdpPacketListener) {
                         // Ignore out of order packets
                         val n = data.optInt("n", 0)
                         val diff = mCounters.getOrElse(pkt.address) { n } - n
-                        if (diff > 0 && diff < 300) {
+                        if (diff in 1..299) {
                             continue
                         }
                         mCounters[pkt.address] = n
@@ -211,7 +203,6 @@ class UdpHandler(listener: OnUdpPacketListener) {
                         Log.e(LOG, "Exception while handling data from ${pkt.socketAddress}!", ex)
                     }
                 } catch(ex :SocketTimeoutException) {
-                    // pass, check for interrupt
                 }
             }
         }
