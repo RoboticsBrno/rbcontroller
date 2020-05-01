@@ -438,6 +438,8 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         val intent = Intent(this, ControllerActivity::class.java)
         intent.putExtra(WifiConfigList.EXTRA_DEVICE, wifi)
         startActivityForResult(intent, ACT_CONTROLLER)
+
+        mDevices.clearBle()
     }
 
     private fun showRenameDialog() {

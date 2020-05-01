@@ -87,6 +87,19 @@ class DeviceRegistry(listener: DiscoverAdapter.OnDeviceClickedListener, bleSuppo
         }
     }
 
+    @UiThread
+    fun clearBle() {
+        val itr = mDevices.iterator()
+        while(itr.hasNext()) {
+            val dev = itr.next()
+            dev.ble = null
+            if(dev.wifi == null) {
+                itr.remove()
+            }
+        }
+        refilterDevices()
+    }
+
     private fun findDevice(dev: Device): Device? {
         return mDevices.find { i ->
             dev.owner == i.owner && dev.name == i.name && dev.ip == i.ip &&
@@ -152,9 +165,6 @@ class DeviceRegistry(listener: DiscoverAdapter.OnDeviceClickedListener, bleSuppo
 
     @UiThread
     private fun refilterDevices() {
-        if(mDevices.isEmpty())
-            return
-
         mVisibleDevices.clear()
         mVisibleDevices.addAll(mDevices.filter(mVisibleFilter))
         mAdapter.notifyDataSetChanged()
