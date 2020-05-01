@@ -192,7 +192,8 @@ class UdpHandler(listener: OnUdpPacketListener) {
                         // Ignore out of order packets
                         val n = data.optInt("n", 0)
                         val diff = mCounters.getOrElse(pkt.address) { n } - n
-                        if (diff in 1..299) {
+                        if (n != -1 && diff in 1..25) {
+                            Log.v(LOG, "Discarding ${n} ${diff} ${str}")
                             continue
                         }
                         mCounters[pkt.address] = n
