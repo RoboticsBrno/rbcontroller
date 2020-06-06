@@ -11,4 +11,46 @@
     <string name="other_peoples_devices">Cizí zařízení</string>
     <string name="owned_by">Majitel je %s</string>
     <string name="password">Zadejte heslo</string>
+    <string name="next">Pokračovat</string>
+    <string name="enable_bt">Zapněte prosím Bluetooth, jinak nebude fungovat změna nastavení WiFi na robotech.</string>
+    <string name="configure_wifi">Nastavit WiFi</string>
+    <string name="mode">Režim</string>
+    <string name="connect_to_existing_wifi">Připojit se na existuící WiFi</string>
+    <string name="serve_as_access_point">Vytvořit Access Point</string>
+    <string name="wifi_ap_channel">Kanál WiFi AP</string>
+    <string name="add_configuration">Přidat konfiguraci</string>
+    <string name="beep">Zapípat</string>
+    <string name="wifi_config_title">Nastavení WIFi na %s</string>
+    <string name="mode_station">Použít existující WiFi</string>
+    <string name="mode_ap">Access Point na kanále #%d</string>
+    <string name="edit">Upravit</string>
+    <string name="delete">Smazat</string>
+    <string name="undo">Zpět</string>
+    <string name="wifi_cfg_deleted">Síť \'%s\' smazána</string>
+    <string name="bluetooth_not_enabled">bluetooth není zapnutý</string>
+    <string name="bluetooth_invalid_device">špatná bluetooth adresa</string>
+    <string name="bluetooth_connect_failed">nebylo možné navázat bluetooth spojení</string>
+    <string name="bluetooth_no_service">zařízení nemá potřebnou GATT servisu</string>
+    <string name="bluetooth_no_characteristic">zařízení nemá potřebnou GATT charakteristiku</string>
+    <string name="writing_wifi_config">Ukládám nastavení WiFi…</string>
+    <string name="wifi_write_error">Chyba: %s</string>
+    <string name="rescan_message">Tento robot a vaše zařízení jsou na stejné WiFi, ale RBControl nemůže najít IP robota. Zkuste obnovit tento seznam.</string>
+    <string name="rescan">Obnovit</string>
+    <string name="enable_wifi">Zapněte prosím WiFi</string>
+    <string name="wifi_failed_to_add">Nepodařilo se přidat novou WiFi síť</string>
+    <string name="wifi_failed_to_enable">Nepodařilo se připojit k WiFi, na které je Robot.</string>
+    <string name="wifi_timed_out">Připojování trvalo moc dlouho.</string>
+    <string name="connecting_to_wifi">Připojuji se k %s…</string>
+    <string name="wifi_too_many_requests">Přiliš mnoho změn nastavení WiFi, připojte se prosím ručně.</string>
+    <string name="unable_to_configure_wifi">WiFi na tomto robotovi nelze nastavit, protože jsme ho nenašli přes Blueooth.</string>
+    <string name="wifi_list_desc">
+        RBControl bohužel nemůže do robota poslat WiFi sítě, které máte uložené v telefonu - Android to neumožňuje.\n\n
+        Můžete si místo toho tady udržovat seznam WiFi sítí, které chcete použít v Robotech.
+    </string>
+    <string name="onboard_ble"><![CDATA[
+        <p><big>Tato verze RBControlleru umí použít Bluetooth aby našla roboty a nastavila na nich WiFi</big></p>
+        <p>Abychom mohli na Androidu používat Bluetooth, tato aplikace musí požádat o <b>povolení k přístupu k poloze.</b></p>
+        <p>Pokud si přejete využívat těchto nových funkcí, prosím <b>povolte RBControlleru přístup k poloze</b> v dalším kroku.</>
+        <p><small>Software na Robotovi také potřebuje aktualizovat, aby podporoval Bluetooth.</small></p>
+    ]]></string>
 </resources>
