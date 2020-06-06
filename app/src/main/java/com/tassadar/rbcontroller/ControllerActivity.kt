@@ -1,10 +1,12 @@
 package com.tassadar.rbcontroller
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONException
@@ -32,6 +34,9 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if(BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
         setContentView(R.layout.activity_controller)
 
         mUdpHandler.start(this)
@@ -41,12 +46,18 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         mServer?.start()
 
         val webview = findViewById<WebView>(R.id.webview)
-        val settings = webview.settings
-        settings.javaScriptEnabled = true
-        settings.userAgentString = "RBController ${BuildConfig.VERSION_NAME}"
-        settings.cacheMode = WebSettings.LOAD_DEFAULT
-        settings.domStorageEnabled = true
-        settings.setAppCacheEnabled(true)
+        webview.settings.apply {
+            javaScriptEnabled = true
+            userAgentString = "RBController ${BuildConfig.VERSION_NAME}"
+            cacheMode = WebSettings.LOAD_DEFAULT
+            domStorageEnabled = true
+            setAppCacheEnabled(true)
+
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                saveFormData = false
+            }
+        }
+
         webview.webViewClient = Client()
         webview.webChromeClient = object: WebChromeClient() {
             override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
@@ -130,6 +141,12 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
                 "nipplejs.min.js",
                 "reconnecting-websocket.min.js"
         )
+
+        override fun onPageFinished(view: WebView?, url: String?) {
+            super.onPageFinished(view, url)
+            view!!.clearFocus()
+            view.requestFocus()
+        }
 
         /*@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         override fun shouldInterceptRequest(view: WebView?, req: WebResourceRequest?): WebResourceResponse? {

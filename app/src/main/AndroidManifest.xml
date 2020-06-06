@@ -31,7 +31,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".ControllerActivity"
-            android:configChanges="orientation|screenSize"/>
+            android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="adjustPan"/>
         <activity android:name=".onboard.OnboardActivity"
             android:windowSoftInputMode="adjustResize|stateHidden"/>
         <activity android:name=".wifi.WifiConfigList" />
