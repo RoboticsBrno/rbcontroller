@@ -253,9 +253,6 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
 
         setStatus(getString(R.string.scanning, mDevices.getOwner()))
         setNoDevicesVisible(true)
-
-        //onBleDeviceDiscovered(Device.Ble("A4:CF12:24:C9:CE", InetAddress.getByName("192.168.0.1"), "FrantaFlinta", "SuperRuka", 100,
-        //Device.WifiConfig(false, "", "flusflus", 1)))
     }
 
     private fun stopScanning() = stopScanning(true)
@@ -357,7 +354,9 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         mWifiConnector = WifiConnector
                 .connect(this, deviceSsid, devCfg.password, object : WifiConnector.OnWifiConnectorDoneListener {
                     override fun onWifiConnectorDone(success: Boolean, errorStringId: Int?) {
-                        onWifiConnectorDone(dev.ble!!, success, errorStringId)
+                        runOnUiThread {
+                            onWifiConnectorDone(dev.ble!!, success, errorStringId)
+                        }
                     }
                 })
     }
@@ -440,6 +439,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         startActivityForResult(intent, ACT_CONTROLLER)
 
         mDevices.clearBle()
+        setNoDevicesVisible(mDevices.getVisible().isEmpty())
     }
 
     private fun showRenameDialog() {
