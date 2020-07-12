@@ -1,6 +1,8 @@
 package com.tassadar.rbcontroller
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -23,6 +25,9 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
 
     private var mServer: WebSocketServer? = null
     private val mUdpHandler = UdpHandler(this)
+    private val mGravitySensor: GravitySensor by lazy(LazyThreadSafetyMode.NONE) {
+        GravitySensor(getSystemService(Context.SENSOR_SERVICE) as SensorManager)
+    }
 
     private val mDevice: Device.WiFi by lazy(LazyThreadSafetyMode.NONE) {
         intent.getParcelableExtra("device") as Device.WiFi
@@ -68,6 +73,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
 
         webview.setOnLongClickListener { return@setOnLongClickListener true }
         webview.isLongClickable = false
+        webview.addJavascriptInterface(mGravitySensor, "RbGravitySensor")
 
         if(savedInstanceState != null) {
             webview.restoreState(savedInstanceState)
@@ -80,11 +86,13 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
         super.onResume()
 
         mUdpHandler.start(this)
+        mGravitySensor.onResume()
     }
 
     override fun onPause() {
         super.onPause()
         mUdpHandler.stop()
+        mGravitySensor.onPause()
     }
 
     override fun onDestroy() {
@@ -114,6 +122,8 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
                 mUdpHandler.stop()
                 mUdpHandler.resetPort()
                 mUdpHandler.start(this)
+
+                mGravitySensor.stop()
 
                 webview.reload()
                 true
