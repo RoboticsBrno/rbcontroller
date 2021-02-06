@@ -48,7 +48,7 @@ class WifiConfigList : AppCompatActivity(), WifiConfigListAdapter.OnWifiConfigCl
     private var mWritePreviousIdx: Int = -1
 
     private val mDevice: Device by lazy(LazyThreadSafetyMode.NONE) {
-        intent.getParcelableExtra(EXTRA_DEVICE) as Device
+        intent.getParcelableExtra<Device>(EXTRA_DEVICE)!!
     }
 
     private val mAdapter: WifiConfigListAdapter by lazy(LazyThreadSafetyMode.NONE) {

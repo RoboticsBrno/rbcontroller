@@ -1,7 +1,6 @@
 package com.tassadar.rbcontroller.wifi
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -10,15 +9,13 @@ import android.net.*
 import android.net.wifi.SupplicantState
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
+import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
-import android.os.Handler
-import android.os.HandlerThread
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import com.tassadar.rbcontroller.BuildConfig
 import com.tassadar.rbcontroller.R
 import java.io.Closeable
 import java.lang.ref.WeakReference
@@ -33,9 +30,13 @@ object WifiConnector {
 
     private const val LOG = "RB:WifiConnector"
 
-    //private var mNetworkListener: AfterQNetworkListener? = null
+    private var mNetworkListener: AboveQNetworkListener? = null
     private var mNetworkId = -1
 
+    // Following comment is left here for historical reference on Android team incompetence.
+    // The AboveQ variant was re-enabled a year later, because Play Store now requires 29 as minimal
+    // targetSdk. The UX is still shit, the bug on OnePlus is still not fixed.
+    //
     // The ConnectivityManager is completely fucking broken on Android 10.
     //  * Connect to the requested network. Disconnects immediately because "App released request,
     //    cancelling NetworkRequest". The Request was, in fact, not fucking canceled, so it starts
@@ -44,27 +45,24 @@ object WifiConnector {
     //    The os still takes like 30s to "search" for the network, and then needs user confirmation
     //    as to which (there's only ONE!) it should connect to.
     //
-    // The fix is to target Pie and use the old APIs (which are intentionally broken when targeting Q).
-    // FIXME: Redo this when fixed (well, when we can no longer target Pie).
-    //
     // As you can tell, many hours were wasted on this trash.
     fun connect(ctx: Context, ssid: String, password: String, listener: OnWifiConnectorDoneListener): Closeable {
-        val connector = /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            /*mNetworkListener?.close(ctx)
+        val connector = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            mNetworkListener?.close(ctx)
             mNetworkListener = null
-            AboveQ(ctx, listener, ssid, password)*/
-        } else {*/
+            AboveQ(ctx, listener, ssid, password)
+        } else {
             BelowQ(ctx, listener, ssid, password)
-        //}
+        }
         connector.connect()
         return connector
     }
 
     fun releaseNetwork(ctx: Context) = synchronized(this) {
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             mNetworkListener?.close(ctx)
             mNetworkListener = null
-        }*/
+        }
         if(mNetworkId != -1) {
             val mgr = ctx.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             mgr.disableNetwork(mNetworkId)
@@ -126,6 +124,7 @@ object WifiConnector {
             } catch(e :IllegalArgumentException) {}
         }
 
+        @SuppressLint("MissingPermission")
         override fun connect() {
             super.connect()
 
@@ -203,7 +202,7 @@ object WifiConnector {
         }
     }
 
-    /*
+
     @SuppressLint("NewApi")
     private class AboveQ(
             mContext: Context,
@@ -229,7 +228,7 @@ object WifiConnector {
                     .build()
 
             try {
-                val callback = AfterQNetworkListener(this)
+                val callback = AboveQNetworkListener(this)
                 mConnMgr.requestNetwork(req, callback)
             } catch(e: RuntimeException) {
                 e.printStackTrace()
@@ -239,7 +238,7 @@ object WifiConnector {
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    private class AfterQNetworkListener(connector: AboveQ) : ConnectivityManager.NetworkCallback() {
+    private class AboveQNetworkListener(connector: AboveQ) : ConnectivityManager.NetworkCallback() {
         private val mConnector = WeakReference(connector)
 
         fun close(ctx: Context) {
@@ -259,6 +258,5 @@ object WifiConnector {
             mConnector.get()?.returnAndClose(false, R.string.wifi_timed_out)
         }
     }
-    */
 
 }

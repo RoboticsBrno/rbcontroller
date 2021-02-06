@@ -30,7 +30,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
     }
 
     private val mDevice: Device.WiFi by lazy(LazyThreadSafetyMode.NONE) {
-        intent.getParcelableExtra("device") as Device.WiFi
+        intent.getParcelableExtra<Device.WiFi>("device")!!
     }
     private val mDeviceAddress: SocketAddress by lazy(LazyThreadSafetyMode.NONE) {
         InetSocketAddress(mDevice.address, UdpHandler.BROADCAST_PORT)

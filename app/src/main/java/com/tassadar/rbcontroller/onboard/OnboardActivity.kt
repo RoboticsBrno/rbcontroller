@@ -15,21 +15,20 @@ import com.tassadar.rbcontroller.R
 class OnboardActivity : AppCompatActivity() {
     private var mCurrentFragmentIdx: Int = -1
 
-    private val mFragments: Array<Class<*>> by lazy(LazyThreadSafetyMode.NONE) {
-        ArrayList<Class<*>>().apply {
-            if(!getSharedPreferences("", Context.MODE_PRIVATE).contains("owner")) {
-                add(FragmentSetupOwner::class.java)
-            }
-
-            if(packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) &&
-                    ContextCompat.checkSelfPermission(this@OnboardActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                add(FragmentSetupBle::class.java)
-            }
-        }.toArray(emptyArray<Class<*>>())
-    }
+    private val mFragments = ArrayList<Class<*>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mFragments.clear()
+        if(!getSharedPreferences("", Context.MODE_PRIVATE).contains("owner")) {
+            mFragments.add(FragmentSetupOwner::class.java)
+        }
+
+        if(packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) &&
+                ContextCompat.checkSelfPermission(this@OnboardActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            mFragments.add(FragmentSetupBle::class.java)
+        }
 
         if(mFragments.isEmpty()) {
             setResult(Activity.RESULT_OK)

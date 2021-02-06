@@ -19,7 +19,7 @@ import com.tassadar.rbcontroller.R
 
 class WifiConfigEdit : AppCompatActivity() {
     private val mDevice: Device by lazy(LazyThreadSafetyMode.NONE) {
-        intent.getParcelableExtra("device") as Device
+        intent.getParcelableExtra<Device>("device")!!
     }
 
     private var mLastWifiName: String = ""
