@@ -2,13 +2,14 @@ package com.tassadar.rbcontroller
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.hardware.SensorManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.MotionEvent
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONException
@@ -68,6 +69,12 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
                 Log.i("WebViewConsole", consoleMessage.message())
                 return true
             }
+        }
+
+        webview.setDownloadListener { url, _, _, _, _ ->
+            val i = Intent(Intent.ACTION_VIEW)
+            i.data = Uri.parse(url)
+            startActivity(i)
         }
 
         webview.setOnLongClickListener { return@setOnLongClickListener true }
