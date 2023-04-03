@@ -42,6 +42,7 @@ class WifiConfigWriteTask(listener: OnFinishedListener) : AsyncTask<Any, Void, I
     @GuardedBy("mLock")
     private var mWriteCharIdx = 0
 
+    @Deprecated("Deprecated in Java")
     override fun doInBackground(vararg paramsVar: Any): Int? {
         val params = paramsVar[0] as Params
 
@@ -86,6 +87,7 @@ class WifiConfigWriteTask(listener: OnFinishedListener) : AsyncTask<Any, Void, I
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onPostExecute(result: Int?) {
         mListener.get()?.onWriteWifiConfigDone(result)
     }

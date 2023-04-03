@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.tassadar.rbcontroller.R
+import com.tassadar.rbcontroller.ble.BleManager
 
 
 class OnboardActivity : AppCompatActivity() {
@@ -26,7 +27,7 @@ class OnboardActivity : AppCompatActivity() {
         }
 
         if(packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) &&
-                ContextCompat.checkSelfPermission(this@OnboardActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            !BleManager.BLE_PERMISSIONS.all { ContextCompat.checkSelfPermission(this@OnboardActivity, it) == PackageManager.PERMISSION_GRANTED }) {
             mFragments.add(FragmentSetupBle::class.java)
         }
 

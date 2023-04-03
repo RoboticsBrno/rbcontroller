@@ -26,6 +26,12 @@ class BleManager : BluetoothAdapter.LeScanCallback {
 
         val BATTERY_SERVICE_UUID = UUID.fromString("0000180f-0000-1000-8000-00805f9b34fb")
         val BATTERY_LEVEL_UUID = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb")
+
+        val BLE_PERMISSIONS = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
     }
 
     private data class DiscoveryItem(
@@ -46,7 +52,7 @@ class BleManager : BluetoothAdapter.LeScanCallback {
         if(!act.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
             return
 
-        if(ContextCompat.checkSelfPermission(act, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        if(!BLE_PERMISSIONS.all { ContextCompat.checkSelfPermission(act, it) == PackageManager.PERMISSION_GRANTED })
             return
 
         val bluetoothManager = act.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -150,6 +156,7 @@ class BleManager : BluetoothAdapter.LeScanCallback {
             }
         }
 
+        @Deprecated("Deprecated in Java")
         override fun onCharacteristicRead(gatt: BluetoothGatt, chr: BluetoothGattCharacteristic, status: Int) {
             when (status) {
                 BluetoothGatt.GATT_SUCCESS -> synchronized(mDiscovered) {

@@ -56,7 +56,6 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
             userAgentString = "RBController ${BuildConfig.VERSION_NAME}"
             cacheMode = WebSettings.LOAD_DEFAULT
             domStorageEnabled = true
-            setAppCacheEnabled(true)
 
             if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                 saveFormData = false
@@ -166,6 +165,7 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
             return super.shouldInterceptRequest(view, req)
         }*/
 
+        @Deprecated("Deprecated in Java")
         override fun shouldInterceptRequest(view: WebView?, url :String): WebResourceResponse? {
             val idx = url.lastIndexOf("/")
             if(idx == -1){

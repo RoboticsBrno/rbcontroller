@@ -89,10 +89,10 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         if(!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
             return false
 
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-            return false
+        if(BleManager.BLE_PERMISSIONS.all{ ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED })
+            return false;
 
-        return !ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        return BleManager.BLE_PERMISSIONS.all{ !ActivityCompat.shouldShowRequestPermissionRationale(this, it) }
     }
 
     override fun onBackPressed() {

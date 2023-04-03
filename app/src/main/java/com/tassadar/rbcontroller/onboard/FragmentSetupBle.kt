@@ -15,6 +15,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import com.tassadar.rbcontroller.R
+import com.tassadar.rbcontroller.ble.BleManager
 
 class FragmentSetupBle : FragmentBase() {
     private var mRoot: View? = null
@@ -79,7 +80,7 @@ class FragmentSetupBle : FragmentBase() {
         }
 
         mRequested = true
-        requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0)
+        requestPermissions(BleManager.BLE_PERMISSIONS, 0)
         return false
     }
 
