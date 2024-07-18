@@ -122,7 +122,7 @@ class BleManager : BluetoothAdapter.LeScanCallback {
         val now = System.currentTimeMillis()
         mDiscovered.values
                 .filter { it.scanned == null && now > it.nextRead }
-                .minBy { it.readCounter }?.let { it ->
+                .minBy { it.readCounter }.let { it ->
                     ++it.readCounter
                     ++mReadsInProgress
                     it.scanned = ScannedDevice(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

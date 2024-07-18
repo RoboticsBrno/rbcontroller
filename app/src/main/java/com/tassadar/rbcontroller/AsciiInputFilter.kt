@@ -11,7 +11,7 @@ class AsciiInputFilter : InputFilter {
         var keepOriginal = true
         val sb = StringBuilder(end - start)
         for (i in start until end) {
-            val c = source!![i].toInt()
+            val c = source!![i].code
             if (c in 1..127)
                 sb.append(c)
             else

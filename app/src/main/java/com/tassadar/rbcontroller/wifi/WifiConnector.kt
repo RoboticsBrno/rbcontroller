@@ -5,7 +5,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.*
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkInfo
+import android.net.NetworkRequest
 import android.net.wifi.SupplicantState
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
@@ -16,10 +20,11 @@ import android.view.View
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import com.tassadar.rbcontroller.R
 import java.io.Closeable
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.Timer
 import kotlin.concurrent.timerTask
 
 
@@ -161,7 +166,9 @@ object WifiConnector {
 
             val filter = IntentFilter()
             filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
-            mContext.registerReceiver(mReceiver, filter)
+            ContextCompat.registerReceiver(mContext, mReceiver, filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
 
             if (!mMgr.enableNetwork(networkId, true)) {
                 returnAndClose(false, R.string.wifi_failed_to_enable)

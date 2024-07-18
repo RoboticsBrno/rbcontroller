@@ -215,9 +215,9 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
         } else {
             mDevices.loadSavedInstance(savedInstanceState)
             mDevices.getAll()
-                    .filter{ it.wifi != null }
+                    .filter{ it.wifi?.address?.hostAddress != null }
                     .forEach {
-                        mDiscoveredWiFi.add(it.wifi!!.address.hostAddress)
+                        mDiscoveredWiFi.add(it.wifi!!.address.hostAddress!!)
                     }
             setNoDevicesVisible(mDevices.getVisible().isEmpty())
 
@@ -427,7 +427,7 @@ class DiscoverActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, Di
     @UiThread
     private fun startControllerActivity(wifi: Device.WiFi) {
         mLastDeviceName = wifi.name
-        mLastDeviceHost = wifi.address.hostAddress
+        mLastDeviceHost = wifi.address.hostAddress!!
 
         val editor = getSharedPreferences("", MODE_PRIVATE).edit()
         editor.putString("lastDeviceName", mLastDeviceName)
