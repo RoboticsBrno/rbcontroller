@@ -12,6 +12,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
@@ -85,6 +88,21 @@ class ControllerActivity : AppCompatActivity(), UdpHandler.OnUdpPacketListener, 
             webview.restoreState(savedInstanceState)
         } else {
             webview.loadUrl("http://${mDevice.address.hostAddress}:${mDevice.port}${mDevice.path}")
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars()
+                        or WindowInsetsCompat.Type.displayCutout()
+            )
+
+            v.updatePadding(
+                left = bars.left,
+                top = bars.top,
+                right = bars.right,
+                bottom = bars.bottom,
+            )
+            WindowInsetsCompat.CONSUMED
         }
     }
 

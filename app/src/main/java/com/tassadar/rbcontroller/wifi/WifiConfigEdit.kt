@@ -13,6 +13,9 @@ import android.widget.RadioButton
 import android.widget.Spinner
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.tassadar.rbcontroller.Device
 import com.tassadar.rbcontroller.R
 
@@ -38,6 +41,21 @@ class WifiConfigEdit : AppCompatActivity() {
 
         findViewById<RadioButton>(R.id.mode_station).setOnCheckedChangeListener { _, checked ->
             updateEnabledViews(checked)
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars()
+                        or WindowInsetsCompat.Type.displayCutout()
+            )
+
+            v.updatePadding(
+                left = bars.left,
+                top = bars.top,
+                right = bars.right,
+                bottom = bars.bottom,
+            )
+            WindowInsetsCompat.CONSUMED
         }
     }
 
